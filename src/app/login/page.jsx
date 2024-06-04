@@ -6,6 +6,7 @@ export default function Login(){
     return(
         <Container fluid>
              <h1>prueba</h1>
+             <h2>Prueba 2</h2>
         </Container>
     );
 }
