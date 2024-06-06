@@ -1,3 +1,4 @@
+"use client";
 import { Container, Form, Row, Col } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import Image from "next/image";
@@ -7,20 +8,17 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import NavBar from "@/layouts/SupportNavbar"
+import NavBar from "@/layouts/SupportNavbar";
 import { useRouter } from "next/router";
 
-
 export default function Login() {
-
-  
   return (
     <div className="d-flex align-items-center justify-content-center bg-light">
       <Container
         fluid
         className="vh-100 d-flex align-items-center justify-content-center bg-light"
       >
-        <NavBar/>
+        <NavBar />
         <div>
           <Card
             body
