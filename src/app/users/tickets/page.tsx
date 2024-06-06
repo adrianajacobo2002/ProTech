@@ -1,4 +1,6 @@
 "use client";
+import * as React from "react";
+import { useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -11,8 +13,20 @@ import FilterAltRoundedIcon from "@mui/icons-material/FilterAltRounded";
 import Button from "@mui/material/Button";
 import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
 import style from "./style.module.scss";
+import TicketsFilter from "@/components/tickets-filter";
+import CreateTicketModal from "@/components/ticket-report";
+
 
 export default function TicketsResume() {
+  const [showOffcanvas, setShowOffcanvas] = useState(false);
+
+  const handleShowOffcanvas = () => setShowOffcanvas(true);
+  const handleCloseOffcanvas = () => setShowOffcanvas(false);
+
+  const [modalShow, setModalShow] = React.useState(false);
+
+  const handleShowModal = () => setModalShow(true);
+  const handleHideModal = () => setModalShow(false);
   return (
     <>
       <div>
@@ -22,9 +36,16 @@ export default function TicketsResume() {
             aria-label="delete"
             size="large"
             style={{ color: "var(--green)" }}
+            onClick={handleShowOffcanvas}
           >
             <FilterAltRoundedIcon fontSize="inherit" />
           </IconButton>
+
+          <TicketsFilter
+            show={showOffcanvas}
+            handleClose={handleCloseOffcanvas}
+            placement="end"
+          />
         </div>
         <hr />
 
@@ -63,9 +84,10 @@ export default function TicketsResume() {
                     align="center"
                     className="justify-content-center align-items-center align-content-center"
                   >
-                    <IconButton aria-label="View Detail" size="large">
+                    <IconButton aria-label="View Detail" size="large"  onClick={handleShowModal}>
                       <KeyboardArrowRightRoundedIcon fontSize="inherit" />
                     </IconButton>
+                    <CreateTicketModal show={modalShow} onHide={handleHideModal} />
                   </TableCell>
                 </TableRow>
               </TableBody>
