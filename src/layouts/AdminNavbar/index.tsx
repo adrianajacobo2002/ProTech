@@ -22,6 +22,8 @@ import ConfirmationNumberRoundedIcon from '@mui/icons-material/ConfirmationNumbe
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import LocalActivityRoundedIcon from '@mui/icons-material/LocalActivityRounded';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import { useRouter } from 'next/router';
 
 
@@ -112,9 +114,11 @@ export default function AdminNavbar() {
   };
 
   const menuItems = [
+    { text: 'Inicio', icon: <HomeRoundedIcon /> },
     { text: 'Tickets', icon: <ConfirmationNumberRoundedIcon /> },
     { text: 'Tareas', icon: <FormatListBulletedRoundedIcon /> },
     { text: 'Usuarios', icon: <PeopleAltRoundedIcon />},
+    { text: 'Mis Tickets', icon: <LocalActivityRoundedIcon />},
     { text: 'Cerrar Sesión', icon: <LogoutRoundedIcon/>}
   ];
   

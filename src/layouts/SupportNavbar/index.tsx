@@ -22,6 +22,8 @@ import ListItemText from '@mui/material/ListItemText';
 import ConfirmationNumberRoundedIcon from '@mui/icons-material/ConfirmationNumberRounded';
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
+import LocalActivityRoundedIcon from '@mui/icons-material/LocalActivityRounded';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 
 const drawerWidth = 240;
 
@@ -108,9 +110,11 @@ export default function SupportNavbar() {
   };
 
   const menuItems = [
+    { text: 'Inicio', icon: <HomeRoundedIcon /> },
     { text: 'Tickets', icon: <ConfirmationNumberRoundedIcon /> },
     { text: 'Tareas', icon: <FormatListBulletedRoundedIcon /> },
-    { text: 'Usuarios', icon: <PeopleAltRoundedIcon /> },
+    { text: 'Mis Tickets', icon: <LocalActivityRoundedIcon />},
+    { text: 'Cerrar Sesión', icon: <PeopleAltRoundedIcon /> },
   ];
   
 

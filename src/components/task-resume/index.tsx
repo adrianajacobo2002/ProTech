@@ -5,7 +5,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import { Col, Row } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import Button from "@mui/material/Button";
-import style from "./styles.module.scss"
+import style from "./styles.module.scss";
 
 interface TaskResumeProps {
   show: boolean;
@@ -21,12 +21,22 @@ function TaskResume(props: TaskResumeProps) {
       centered
     >
       <Modal.Body className="p-5">
-        <h4 className="py-2">Ticket #12345</h4>
+        <h5>
+          <b>Ticket #123214</b>
+        </h5>
+        <p>-Inserte descripción del ticket bla bla bla-</p>
+
         <div>
           <Row className="py-2">
-            <Col md={4}><b>Tarea Número</b></Col>
-            <Col md={4}><b>Encargado</b></Col>
-            <Col md={4}><b>Estado</b></Col>
+            <Col md={4}>
+              <b>Tarea Número</b>
+            </Col>
+            <Col md={4}>
+              <b>Encargado</b>
+            </Col>
+            <Col md={4}>
+              <b>Estado</b>
+            </Col>
           </Row>
           <Row>
             <Col md={4}>Tarea 1</Col>
@@ -48,24 +58,15 @@ function TaskResume(props: TaskResumeProps) {
             </Col>
           </Row>
 
-          <div className="py-4">
-            <Form>
-              <Form.Group className="mb-3" controlId="InputComentario">
-                <Form.Label>
-                    <b>Comentario</b>
-                </Form.Label>
-                <Form.Control as="textarea" rows={3} />
-              </Form.Group>
-            </Form>
+          <div className="pt-5 text-center">
+            <Button
+              fullWidth
+              className={style["btn-sendInfo"]}
+              variant="contained"
+            >
+              Enviar
+            </Button>
           </div>
-
-          <Button
-          fullWidth
-            className={style["btn-sendInfo"]}
-            variant="contained"
-          >
-            Enviar
-          </Button>
         </div>
       </Modal.Body>
     </Modal>
@@ -73,15 +74,10 @@ function TaskResume(props: TaskResumeProps) {
 }
 
 interface TasksResumeModalProps {
-    show: boolean;
-    onHide: () => void;
-  }
-  
-  export default function TasksResumeModal(props: TasksResumeModalProps) {
-    return (
-      <TaskResume
-        show={props.show}
-        onHide={props.onHide}
-      />
-    );
+  show: boolean;
+  onHide: () => void;
+}
+
+export default function TasksResumeModal(props: TasksResumeModalProps) {
+  return <TaskResume show={props.show} onHide={props.onHide} />;
 }
