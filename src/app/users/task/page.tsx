@@ -1,5 +1,7 @@
 "use client";
 import Table from "@mui/material/Table";
+import * as React from "react";
+import { useState } from "react";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
@@ -11,8 +13,13 @@ import FilterAltRoundedIcon from "@mui/icons-material/FilterAltRounded";
 import Button from "@mui/material/Button";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import style from "./style.module.scss";
+import TaskReport from "@/components/task-report";
 
 export default function TasksResume() {
+  const [modalShow, setModalShow] = React.useState(false);
+
+  const handleShowModal = () => setModalShow(true);
+  const handleHideModal = () => setModalShow(false);
   return (
     <>
       <div>
@@ -58,9 +65,11 @@ export default function TasksResume() {
                       aria-label="View Detail"
                       size="large"
                       style={{ color: "var(--green)" }}
+                      onClick={handleShowModal}
                     >
                       <InfoRoundedIcon fontSize="inherit" />
                     </IconButton>
+                    <TaskReport show={modalShow} onHide={handleHideModal} />
                   </TableCell>
                 </TableRow>
               </TableBody>

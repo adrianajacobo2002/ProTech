@@ -17,6 +17,8 @@ import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import UsersTable from "@/components/users-table";
 import style from "./style.module.scss";
 import { Poppins } from "next/font/google";
+import ClientSignUpModal from "@/forms/ClientSignUp";
+import EmployeeSignUpModal from "@/forms/EmployeeSignUp";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -54,6 +56,15 @@ export default function UsersReport() {
     setValue(newValue);
   };
 
+  const [modalShow, setModalShow] = React.useState(false);
+  const [EmployeemodalShow, EmployeesetModalShow] = React.useState(false);
+
+  const handleShowModal = () => setModalShow(true);
+  const handleHideModal = () => setModalShow(false);
+
+  const handleEmployeeModalShow = () => EmployeesetModalShow(true);
+  const handleEmployeeModalClose = () => EmployeesetModalShow(false);
+
   return (
     <>
       <div>
@@ -78,17 +89,21 @@ export default function UsersReport() {
                     variant="contained"
                     className={style["btn-createClient"]}
                     startIcon={<PersonRoundedIcon />}
+                    onClick={handleShowModal}
                   >
                     Crear Cliente
                   </Button>
-
+                  <ClientSignUpModal show={modalShow} onHide={handleHideModal} />
                   <Button
                     variant="contained"
                     className={style["btn-createEmployee"]}
                     startIcon={<PersonRoundedIcon />}
+                    onClick={handleEmployeeModalShow}
                   >
                     Crear Empleado
                   </Button>
+                  <EmployeeSignUpModal show={EmployeemodalShow} onHide={handleEmployeeModalClose} />
+
                 </div>
               </div>
             </Box>
