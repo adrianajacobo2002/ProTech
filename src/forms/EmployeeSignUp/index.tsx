@@ -1,9 +1,7 @@
 "use client";
 import * as React from "react";
 import Modal from "react-bootstrap/Modal";
-import Dropdown from "react-bootstrap/Dropdown";
 import { Col, Row } from "react-bootstrap";
-import Form from "react-bootstrap/Form";
 import Button from "@mui/material/Button";
 import style from "./styles.module.scss";
 import TextField from "@mui/material/TextField";

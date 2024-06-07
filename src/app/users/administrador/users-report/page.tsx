@@ -1,24 +1,16 @@
 "use client";
 import * as React from "react";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import Button from "@mui/material/Button";
-import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import UsersTable from "@/components/users-table";
 import style from "./style.module.scss";
-import { Poppins } from "next/font/google";
 import ClientSignUpModal from "@/forms/ClientSignUp";
 import EmployeeSignUpModal from "@/forms/EmployeeSignUp";
+
+
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -58,12 +50,16 @@ export default function UsersReport() {
 
   const [modalShow, setModalShow] = React.useState(false);
   const [EmployeemodalShow, EmployeesetModalShow] = React.useState(false);
+  
 
   const handleShowModal = () => setModalShow(true);
   const handleHideModal = () => setModalShow(false);
 
   const handleEmployeeModalShow = () => EmployeesetModalShow(true);
   const handleEmployeeModalClose = () => EmployeesetModalShow(false);
+
+
+
 
   return (
     <>
@@ -119,3 +115,4 @@ export default function UsersReport() {
     </>
   );
 }
+

@@ -1,4 +1,5 @@
 "use client";
+import * as React from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -9,8 +10,13 @@ import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import style from "./style.module.scss";
+import Modal from 'react-bootstrap/Modal';
+import TextField from "@mui/material/TextField";
+import { Col, Row } from "react-bootstrap";
+
 
 export default function UsersTable() {
+  const [modalShow, setModalShow] = React.useState(false);
   return (
     <>
       <Paper sx={{ width: "100%", overflow: "hidden" }}>
@@ -40,9 +46,10 @@ export default function UsersTable() {
                   align="center"
                   className="justify-content-center align-items-center align-content-center"
                 >
-                  <IconButton aria-label="View Detail" size="large">
+                  <IconButton aria-label="View Detail" size="large" onClick={() => setModalShow(true)}>
                     <InfoRoundedIcon fontSize="inherit" />
                   </IconButton>
+                  <UserInformationModal show={modalShow} onHide={() => setModalShow(false)}/>
                 </TableCell>
               </TableRow>
             </TableBody>
@@ -52,3 +59,105 @@ export default function UsersTable() {
     </>
   );
 }
+
+interface UserInfoProps {
+  show: boolean;
+  onHide: () => void;
+}
+
+function UserInformationModal(props: UserInfoProps) {
+  return (
+    <Modal
+      {...props}
+      size="lg"
+      aria-labelledby="contained-modal-title-vcenter"
+      centered
+      scrollable
+    >
+      
+      <Modal.Body className="p-5">
+
+        <small className={style["word"]}>Cliente Externo</small>
+
+        <div className="text-center">
+          <div>
+            <Row className="py-3">
+              <Col md={6}>
+                <TextField
+                  fullWidth
+                  disabled
+                  id="outlined-basic"
+                  type="name"
+                  label="Nombres"
+                  variant="outlined"
+                  size="small"
+                />
+              </Col>
+              <Col md={6}>
+                <TextField
+                  disabled
+                  fullWidth
+                  id="outlined-basic"
+                  type="name"
+                  label="Apellidos"
+                  variant="outlined"
+                  size="small"
+                />
+              </Col>
+            </Row>
+          </div>
+          <div>
+            <Row className="py-3">
+              <Col>
+                <TextField
+                  fullWidth
+                  disabled
+                  id="outlined-basic"
+                  type="email"
+                  label="Correo Electrónico"
+                  variant="outlined"
+                  size="small"
+                />
+              </Col>
+            </Row>
+          </div>
+          <div>
+            <Row className="py-3">
+              <Col>
+                <TextField
+                  fullWidth
+                  disabled
+                  id="outlined-basic"
+                  label="Número Telefónico"
+                  variant="outlined"
+                  size="small"
+                />
+              </Col>
+            </Row>
+          </div>
+          <div>
+            <Row className="py-3">
+              <Col>
+                <TextField
+                  fullWidth
+                  disabled
+                  id="outlined-basic"
+                  type="text"
+                  label="Nombre de la Empresa"
+                  variant="outlined"
+                  size="small"
+                />
+              </Col>
+            </Row>
+          </div>
+        </div>
+
+      </Modal.Body>
+      
+    </Modal>
+  );
+}
+
+
+
+
