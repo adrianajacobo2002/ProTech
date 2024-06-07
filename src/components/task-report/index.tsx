@@ -28,18 +28,14 @@ function TaskReport(props: TaskReportProps) {
           <Row className="py-2">
             <Col md={4}>
               <b>Tarea Número</b>
+              <Col md={4}>Tarea 1</Col>
             </Col>
             <Col md={4}>
               <b>Encargado</b>
+              <Col md={4}>José P</Col>
             </Col>
             <Col md={4}>
               <b>Estado</b>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={4}>Tarea 1</Col>
-            <Col md={4}>José P</Col>
-            <Col md={4}>
               <Dropdown>
                 <Dropdown.Toggle variant="success" id="dropdown-status">
                   Status de la Tarea
@@ -55,53 +51,6 @@ function TaskReport(props: TaskReportProps) {
               </Dropdown>
             </Col>
           </Row>
-
-          <div className="py-4">
-            <Form>
-              <Form.Group className="mb-3" controlId="InputComentario">
-                <Form.Label>
-                  <b>Comentario</b>
-                </Form.Label>
-                <Form.Control as="textarea" rows={3} />
-              </Form.Group>
-            </Form>
-          </div>
-
-          <Button
-            fullWidth
-            className={style["btn-sendInfo"]}
-            variant="contained"
-          >
-            Enviar
-          </Button>
-
-          <div className="text-center py-4">
-            <div className="pb-4">
-              <b>Historial</b>
-            </div>
-
-            <Row>
-              <Col md={3}>
-                <small>Tarea 1</small>
-                <br />
-                <small>Jose P.</small>
-                <br />
-                <small className={style["word"]}>En Progreso</small>
-              </Col>
-
-              <Col md={9}>
-                <TextField
-                  fullWidth
-                  disabled
-                  id="outlined-multiline-flexible"
-                  label="Comentario"
-                  multiline
-                  rows={2}
-                />
-              </Col>
-            </Row>
-            <hr />
-          </div>
         </div>
       </Modal.Body>
     </Modal>
