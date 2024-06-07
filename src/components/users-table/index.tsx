@@ -3,6 +3,7 @@ import * as React from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
+import Button from "@mui/material/Button";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
@@ -10,6 +11,8 @@ import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import style from "./style.module.scss";
+import AdminPanelSettingsRoundedIcon from "@mui/icons-material/AdminPanelSettingsRounded";
+import RemoveCircleOutlineRoundedIcon from "@mui/icons-material/RemoveCircleOutlineRounded";
 import Modal from "react-bootstrap/Modal";
 import TextField from "@mui/material/TextField";
 import { Col, Row } from "react-bootstrap";
@@ -153,6 +156,30 @@ function UserInformationModal(props: UserInfoProps) {
                   variant="outlined"
                   size="small"
                 />
+              </Col>
+            </Row>
+          </div>
+          <div className="pt-4">
+            <Row>
+              <Col md={6}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  className={style["btn-createEmployee"]}
+                  startIcon={<AdminPanelSettingsRoundedIcon />}
+                >
+                  Otorgar Permisos
+                </Button>
+              </Col>
+              <Col md={6}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  className={style["btn-createClient"]}
+                  startIcon={<RemoveCircleOutlineRoundedIcon />}
+                >
+                  Remover Permisos
+                </Button>
               </Col>
             </Row>
           </div>
