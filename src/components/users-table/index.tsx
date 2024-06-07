@@ -10,10 +10,9 @@ import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import style from "./style.module.scss";
-import Modal from 'react-bootstrap/Modal';
+import Modal from "react-bootstrap/Modal";
 import TextField from "@mui/material/TextField";
 import { Col, Row } from "react-bootstrap";
-
 
 export default function UsersTable() {
   const [modalShow, setModalShow] = React.useState(false);
@@ -41,15 +40,24 @@ export default function UsersTable() {
                 <TableCell align="center">Jose P.</TableCell>
                 <TableCell align="center">Apellido1</TableCell>
                 <TableCell align="center">jose@gmail.com</TableCell>
-                <TableCell align="center"><p className={style["employee-role"]}>Administrador</p></TableCell>
+                <TableCell align="center">
+                  <p className={style["employee-role"]}>Administrador</p>
+                </TableCell>
                 <TableCell
                   align="center"
                   className="justify-content-center align-items-center align-content-center"
                 >
-                  <IconButton aria-label="View Detail" size="large" onClick={() => setModalShow(true)}>
+                  <IconButton
+                    aria-label="View Detail"
+                    size="large"
+                    onClick={() => setModalShow(true)}
+                  >
                     <InfoRoundedIcon fontSize="inherit" />
                   </IconButton>
-                  <UserInformationModal show={modalShow} onHide={() => setModalShow(false)}/>
+                  <UserInformationModal
+                    show={modalShow}
+                    onHide={() => setModalShow(false)}
+                  />
                 </TableCell>
               </TableRow>
             </TableBody>
@@ -74,9 +82,7 @@ function UserInformationModal(props: UserInfoProps) {
       centered
       scrollable
     >
-      
       <Modal.Body className="p-5">
-
         <small className={style["word"]}>Cliente Externo</small>
 
         <div className="text-center">
@@ -151,13 +157,7 @@ function UserInformationModal(props: UserInfoProps) {
             </Row>
           </div>
         </div>
-
       </Modal.Body>
-      
     </Modal>
   );
 }
-
-
-
-
