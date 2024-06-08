@@ -1,4 +1,5 @@
 import { API_URL } from "@/utils/consts";
+import { TUser } from "@/utils/types";
 
 export const login = async (email: string, password: string) => {
   const res = await fetch("/api/login", {

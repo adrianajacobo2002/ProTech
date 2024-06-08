@@ -1,5 +1,6 @@
 "use client";
-import * as React from "react";
+
+import { useState } from "react";
 import WelcomeCard from "@/components/welcome-card";
 import { Col, Row, Card } from "react-bootstrap";
 import ButtonCrear from "@/components/button-create";
@@ -20,13 +21,17 @@ import HistoryToggleOffRoundedIcon from "@mui/icons-material/HistoryToggleOffRou
 import IconButton from "@mui/material/IconButton";
 import CreateTicketModal from "@/components/ticket-report";
 import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
-
+import useUser from "@/hooks/useUser";
+import useStats from "@/hooks/useStats";
 
 export default function DashboardCliente() {
-    const [modalShow, setModalShow] = React.useState(false);
+  const [modalShow, setModalShow] = useState(false);
+  const { user } = useUser();
+  const { stats, statsLoading } = useStats(user?.idUser ?? 0);
 
-    const handleShowModal = () => setModalShow(true);
-    const handleHideModal = () => setModalShow(false);
+  const handleShowModal = () => setModalShow(true);
+  const handleHideModal = () => setModalShow(false);
+
   return (
     <div>
       <Row>
@@ -45,98 +50,97 @@ export default function DashboardCliente() {
 
           {/* Card estadísticas de cliente  */}
           <Col md={8}>
-            <Card className="px-4 pt-4" style={{height:"300px"}}>
+            <Card className="px-4 pt-4" style={{ height: "300px" }}>
               <h4 style={{ fontSize: "25px" }}>
                 <b>Mis Tickets</b>
               </h4>
 
               <Row className="pt-4 px-5">
                 <Col md={8}>
-                  {/*ESTADÍSTICAS PRIMERA FILA  */}
-                  <Row>
-                    {/*ELEMENTO TOTAL ESTADÍSTICA  */}
-                    <Col md={6}>
-                      <div className="d-flex align-items-center">
-                        <div className="pe-4">
-                          <Avatar
-                            style={{
-                              backgroundColor: "var(--green)",
-                              color: "black",
-                            }}
-                          >
-                            <ChecklistRoundedIcon />
-                          </Avatar>
-                        </div>
-                        <div>
-                          <h2>10</h2>
-                          <p>Total</p>
-                        </div>
-                      </div>
-                    </Col>
+                  {statsLoading || (
+                    <>
+                      <Row>
+                        <Col md={6}>
+                          <div className="d-flex align-items-center">
+                            <div className="pe-4">
+                              <Avatar
+                                style={{
+                                  backgroundColor: "var(--green)",
+                                  color: "black",
+                                }}
+                              >
+                                <ChecklistRoundedIcon />
+                              </Avatar>
+                            </div>
+                            <div>
+                              <h2>{stats?.total}</h2>
+                              <p>Total</p>
+                            </div>
+                          </div>
+                        </Col>
 
-                    {/*ELEMENTOS RESUELTOS ESTADÍSTICA  */}
-                    <Col md={6}>
-                      <div className="d-flex align-items-center">
-                        <div className="pe-4">
-                          <Avatar
-                            style={{
-                              backgroundColor: "var(--green)",
-                              color: "black",
-                            }}
-                          >
-                            <CheckCircleOutlineRoundedIcon />
-                          </Avatar>
-                        </div>
-                        <div>
-                          <h2>2</h2>
-                          <p>Resueltos</p>
-                        </div>
-                      </div>
-                    </Col>
-                  </Row>
+                        <Col md={6}>
+                          <div className="d-flex align-items-center">
+                            <div className="pe-4">
+                              <Avatar
+                                style={{
+                                  backgroundColor: "var(--green)",
+                                  color: "black",
+                                }}
+                              >
+                                <CheckCircleOutlineRoundedIcon />
+                              </Avatar>
+                            </div>
+                            <div>
+                              <h2>{stats?.resueltos}</h2>
+                              <p>Resueltos</p>
+                            </div>
+                          </div>
+                        </Col>
+                      </Row>
 
-                  {/*ESTADÍSTICAS PRIMERA FILA  */}
-                  <Row>
-                    {/*ELEMENTO PROGRESO ESTADÍSTICA  */}
-                    <Col md={6}>
-                      <div className="d-flex align-items-center">
-                        <div className="pe-4">
-                          <Avatar
-                            style={{
-                              backgroundColor: "var(--green)",
-                              color: "black",
-                            }}
-                          >
-                            <AutoModeRoundedIcon />
-                          </Avatar>
-                        </div>
-                        <div>
-                          <h2>6</h2>
-                          <p>En Progreso</p>
-                        </div>
-                      </div>
-                    </Col>
+                      <Row>
+                        <Col md={6}>
+                          <div className="d-flex align-items-center">
+                            <div className="pe-4">
+                              <Avatar
+                                style={{
+                                  backgroundColor: "var(--green)",
+                                  color: "black",
+                                }}
+                              >
+                                <AutoModeRoundedIcon />
+                              </Avatar>
+                            </div>
+                            <div>
+                              <h2>{stats?.progreso}</h2>
+                              <p>En Progreso</p>
+                            </div>
+                          </div>
+                        </Col>
 
-                    {/*ELEMENTOS EN ESPERA ESTADÍSTICA  */}
-                    <Col md={6}>
-                      <div className="d-flex align-items-center ">
-                        <div className="pe-4">
-                          <Avatar
-                            style={{
-                              backgroundColor: "var(--green)",
-                              color: "black",
-                            }}
-                          >
-                            <HistoryToggleOffRoundedIcon />
-                          </Avatar>
-                        </div>
-                        <div>
-                          <h2>2</h2>
-                          <p>En Espera</p>
-                        </div>
-                      </div>
-                    </Col>
-                  </Row>
+                        {/*ELEMENTOS EN ESPERA ESTADÍSTICA  */}
+                        <Col md={6}>
+                          <div className="d-flex align-items-center ">
+                            <div className="pe-4">
+                              <Avatar
+                                style={{
+                                  backgroundColor: "var(--green)",
+                                  color: "black",
+                                }}
+                              >
+                                <HistoryToggleOffRoundedIcon />
+                              </Avatar>
+                            </div>
+                            <div>
+                              <h2>{stats?.espera}</h2>
+                              <p>En Espera</p>
+                            </div>
+                          </div>
+                        </Col>
+                      </Row>
+                    </>
+                  )}
                 </Col>
 
                 {/*IMAGEN ESTADÍSTICA  */}
@@ -157,52 +161,56 @@ export default function DashboardCliente() {
       {/* Card resumen de Tickets recién añadidos  */}
       <Row className="py-4">
         <Col md={12}>
-        <Paper sx={{ width: "100%", overflow: "hidden" }}>
-          <TableContainer component={Paper}>
-            <Table
-              stickyHeader
-              sx={{ minWidth: 200 }}
-              aria-label="simple table"
-            >
-              <TableHead>
-                <TableRow>
-                  <TableCell align="center">ID Ticket</TableCell>
-                  <TableCell align="center">Solicitante</TableCell>
-                  <TableCell align="center">Fecha</TableCell>
-                  <TableCell align="center">Agente</TableCell>
-                  <TableCell align="center">Área</TableCell>
-                  <TableCell align="center">Estado</TableCell>
-                  <TableCell align="center">Detalle</TableCell>
-                </TableRow>
-              </TableHead>
+          <Paper sx={{ width: "100%", overflow: "hidden" }}>
+            <TableContainer component={Paper}>
+              <Table
+                stickyHeader
+                sx={{ minWidth: 200 }}
+                aria-label="simple table"
+              >
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="center">ID Ticket</TableCell>
+                    <TableCell align="center">Solicitante</TableCell>
+                    <TableCell align="center">Fecha</TableCell>
+                    <TableCell align="center">Agente</TableCell>
+                    <TableCell align="center">Área</TableCell>
+                    <TableCell align="center">Estado</TableCell>
+                    <TableCell align="center">Detalle</TableCell>
+                  </TableRow>
+                </TableHead>
 
-              <TableBody>
-                <TableRow>
-                  <TableCell component="th" scope="row" align="center">
-                    12345678
-                  </TableCell>
-                  <TableCell align="center">Jose P.</TableCell>
-                  <TableCell align="center">Ahora</TableCell>
-                  <TableCell align="center">Agente 1</TableCell>
-                  <TableCell align="center">Base de datos</TableCell>
-                  <TableCell align="center">
-                    Abierto
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    className="justify-content-center align-items-center align-content-center"
-                  >
-                    <IconButton aria-label="View Detail" size="large"   onClick={handleShowModal}>
-                    <KeyboardArrowRightRoundedIcon fontSize="inherit" />
-                    </IconButton>
-                    <CreateTicketModal show={modalShow} onHide={handleHideModal} />
-                    
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
+                <TableBody>
+                  <TableRow>
+                    <TableCell component="th" scope="row" align="center">
+                      12345678
+                    </TableCell>
+                    <TableCell align="center">Jose P.</TableCell>
+                    <TableCell align="center">Ahora</TableCell>
+                    <TableCell align="center">Agente 1</TableCell>
+                    <TableCell align="center">Base de datos</TableCell>
+                    <TableCell align="center">Abierto</TableCell>
+                    <TableCell
+                      align="center"
+                      className="justify-content-center align-items-center align-content-center"
+                    >
+                      <IconButton
+                        aria-label="View Detail"
+                        size="large"
+                        onClick={handleShowModal}
+                      >
+                        <KeyboardArrowRightRoundedIcon fontSize="inherit" />
+                      </IconButton>
+                      <CreateTicketModal
+                        show={modalShow}
+                        onHide={handleHideModal}
+                      />
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
         </Col>
       </Row>
     </div>

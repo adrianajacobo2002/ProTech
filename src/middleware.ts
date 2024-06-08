@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { TUser } from "./utils/types";
 
 export function middleware(req: NextRequest) {
   const userCookie = cookies().get("user");

@@ -1,4 +1,4 @@
-type TUser = {
+export type TUser = {
   idUser: number;
   name: string;
   email: string;
@@ -8,4 +8,11 @@ type TUser = {
   idUserCategory: number;
   changePassword: boolean;
   userCategoryName: string;
+};
+
+export type TStats = {
+  total: number;
+  resueltos: number;
+  progreso: number;
+  espera: number;
 };

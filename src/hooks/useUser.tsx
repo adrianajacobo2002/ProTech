@@ -1,10 +1,20 @@
+import { TUser } from "@/utils/types";
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-const store = create<TStore>()((set) => ({
-  user: null,
-  setUser: (user) => set(() => ({ user })),
-  deleteUser: () => set(() => ({ user: null })),
-}));
+const store = create<TStore>()(
+  persist(
+    (set) => ({
+      user: null,
+      setUser: (user) => set(() => ({ user })),
+      deleteUser: () => set(() => ({ user: null })),
+    }),
+    {
+      name: "user",
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);
 
 export default function useUser() {
   return store((state) => state);
