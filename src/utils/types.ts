@@ -6,4 +6,6 @@ type TUser = {
   companyName: string;
   jobPosition: string;
   idUserCategory: number;
+  changePassword: boolean;
+  userCategoryName: string;
 };

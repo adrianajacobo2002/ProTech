@@ -14,10 +14,10 @@ export function middleware(req: NextRequest) {
       User: "cliente",
       Support: "soporte",
     };
-    const { jobPosition } = JSON.parse(userCookie.value) as TUser;
+    const { userCategoryName } = JSON.parse(userCookie.value) as TUser;
     return NextResponse.redirect(
       new URL(
-        `/users/${userRolesUrl[jobPosition as keyof typeof userRolesUrl]}`,
+        `/users/${userRolesUrl[userCategoryName as keyof typeof userRolesUrl]}`,
         currentUrl
       )
     );

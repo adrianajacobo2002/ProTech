@@ -38,7 +38,7 @@ export default function Login() {
     }
 
     setUser(user);
-    const { jobPosition } = user;
+    const { userCategoryName } = user;
     const userRolesUrl = {
       Administrator: "administrador",
       User: "cliente",
@@ -46,7 +46,7 @@ export default function Login() {
     };
 
     router.push(
-      `/users/${userRolesUrl[jobPosition as keyof typeof userRolesUrl]}`
+      `/users/${userRolesUrl[userCategoryName as keyof typeof userRolesUrl]}`
     );
   };
 
