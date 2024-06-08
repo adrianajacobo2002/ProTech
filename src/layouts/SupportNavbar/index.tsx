@@ -21,9 +21,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ConfirmationNumberRoundedIcon from '@mui/icons-material/ConfirmationNumberRounded';
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
-import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import LocalActivityRoundedIcon from '@mui/icons-material/LocalActivityRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+
 
 const drawerWidth = 240;
 
@@ -114,7 +115,7 @@ export default function SupportNavbar() {
     { text: 'Tickets', icon: <ConfirmationNumberRoundedIcon /> },
     { text: 'Tareas', icon: <FormatListBulletedRoundedIcon /> },
     { text: 'Mis Tickets', icon: <LocalActivityRoundedIcon />},
-    { text: 'Cerrar Sesión', icon: <PeopleAltRoundedIcon /> },
+    { text: 'Cerrar Sesión', icon: <LogoutRoundedIcon /> },
   ];
   
 

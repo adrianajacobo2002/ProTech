@@ -57,16 +57,6 @@ function TaskResume(props: TaskResumeProps) {
               </Dropdown>
             </Col>
           </Row>
-
-          <div className="pt-5 text-center">
-            <Button
-              fullWidth
-              className={style["btn-sendInfo"]}
-              variant="contained"
-            >
-              Enviar
-            </Button>
-          </div>
         </div>
       </Modal.Body>
     </Modal>

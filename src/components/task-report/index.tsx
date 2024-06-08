@@ -23,7 +23,10 @@ function TaskReport(props: TaskReportProps) {
       scrollable
     >
       <Modal.Body className="p-5">
-        <h4 className="py-2">Ticket #12345</h4>
+        <h5>
+          <b>Ticket #123214</b>
+        </h5>
+        <p>-Inserte descripción del ticket bla bla bla-</p>
         <div>
           <Row className="py-2">
             <Col md={4}>

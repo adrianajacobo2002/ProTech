@@ -18,6 +18,12 @@ export default function CreateTicketButton() {
         variant="contained"
         endIcon={<AddRoundedIcon />}
         onClick={handleShowModal}
+        sx={{
+          backgroundColor: '#BAF266',
+          '&:hover': {
+            backgroundColor: '#BAF266',
+          },
+        }}
       >
         Crear nuevo ticket
       </Button>

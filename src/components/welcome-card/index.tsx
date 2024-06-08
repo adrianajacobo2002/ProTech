@@ -9,8 +9,8 @@ import style from "./styles.module.scss";
 
 export default function WelcomeCard() {
   return (
-    <div>
-      <Card body className="px-2">
+    <div   >
+      <Card body className="px-2" style={{height:"300px"}}>
         <Row>
           <Col>
             <h1 style={{ fontSize: "25px" }}>
