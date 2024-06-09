@@ -147,6 +147,29 @@ function TicketReport(props: TicketReportProps) {
           </Grid>
         </div>
 
+
+        {/* Se agregó botón para asignar el ticket  */}
+        <div className="pb-5">
+          <h5>Asignar Ticket</h5>
+          <Card body className="text-center">
+            <div className="py-2">
+              <Autocomplete
+                disablePortal
+                id="combo-box-demo"
+                options={people}
+                renderInput={(params) => (
+                  <TextField {...params} label="Agente" />
+                )}
+              />
+            </div>
+            <div>
+              <Button className={style["btn-sendInfo"]} variant="contained">
+                Asignar Ticket
+              </Button>
+            </div>
+          </Card>
+        </div>
+
         <div className="pb-3">
           <h5>Actualizar Ticket</h5>
           <Card body className="px-3">
