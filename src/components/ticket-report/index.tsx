@@ -21,6 +21,8 @@ import { Button } from "@mui/material";
 import { API_URL } from "@/utils/consts";
 import { toast } from "react-toastify";
 
+import styles from "./styles.module.scss";
+
 interface TicketReportProps {
   ticket: TTicketValue;
   show: boolean;
@@ -129,7 +131,6 @@ function TicketReport(props: TicketReportProps) {
           </Grid>
         </div>
 
-
         {/* Se agregó botón para asignar el ticket  */}
         <div className="pb-5">
           <h5>Asignar Ticket</h5>
@@ -145,7 +146,7 @@ function TicketReport(props: TicketReportProps) {
               />
             </div>
             <div>
-              <Button className={style["btn-sendInfo"]} variant="contained">
+              <Button className={styles["btn-sendInfo"]} variant="contained">
                 Asignar Ticket
               </Button>
             </div>
@@ -161,9 +162,9 @@ function TicketReport(props: TicketReportProps) {
           <h5>Historial</h5>
           {t.TicketComments.$values.map((c, i) => (
             <div key={i}>
-              <p>{c.comment}</p>
+              <p>{c.Comment}</p>
               <h6 style={{ fontSize: 12 }}>
-                {new Date(c.date).toLocaleDateString()}
+                {new Date(c.Date).toLocaleDateString()}
               </h6>
               <hr />
             </div>

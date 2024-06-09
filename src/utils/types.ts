@@ -59,8 +59,8 @@ export type TTicketValue = {
   TicketComments: {
     $id: "6";
     $values: {
-      comment: string;
-      date: string;
+      Comment: string;
+      Date: string;
     }[];
   };
 };
