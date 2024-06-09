@@ -1,5 +1,5 @@
 "use client";
-import * as React from "react";
+
 import { useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -15,13 +15,15 @@ import style from "./style.module.scss";
 import TicketsFilter from "@/components/tickets-filter";
 import CreateTicketModal from "@/components/ticket-report";
 import useUser from "@/hooks/useUser";
-import useTickets from "@/hooks/useTickets";
 import { TTicketValue } from "@/utils/types";
+import useAssignedTickets from "@/hooks/useAssignedTickets";
 
-export default function TicketsResume() {
+export default function TicketsAsignados() {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const { user } = useUser();
-  const { tickets, ticketsLoading } = useTickets(user!.idUser);
+  const { assignedTickets, assignedTicketsLoading } = useAssignedTickets(
+    user?.idUser ?? 0
+  );
   const [selectedTicket, setSelectedTicket] = useState<
     TTicketValue | undefined
   >();
@@ -29,12 +31,12 @@ export default function TicketsResume() {
   const handleShowOffcanvas = () => setShowOffcanvas(true);
   const handleCloseOffcanvas = () => setShowOffcanvas(false);
 
-  const [modalShow, setModalShow] = React.useState(false);
+  const [modalShow, setModalShow] = useState(false);
 
   const handleShowModal = () => setModalShow(true);
   const handleHideModal = () => setModalShow(false);
 
-  if (ticketsLoading && !tickets) return;
+  if (assignedTicketsLoading) return;
   return (
     <>
       <div>
@@ -69,14 +71,13 @@ export default function TicketsResume() {
                   <TableCell align="center">ID Ticket</TableCell>
                   <TableCell align="center">Solicitante</TableCell>
                   <TableCell align="center">Fecha</TableCell>
-                  <TableCell align="center">Agente</TableCell>
                   <TableCell align="center">Área</TableCell>
                   <TableCell align="center">Estado</TableCell>
                   <TableCell align="center"></TableCell>
                 </TableRow>
               </TableHead>
 
-              {tickets?.map((t, i) => (
+              {assignedTickets.map((t, i) => (
                 <TableBody key={i}>
                   <TableRow>
                     <TableCell component="th" scope="row" align="center">
@@ -85,9 +86,6 @@ export default function TicketsResume() {
                     <TableCell align="center">{t.Name}</TableCell>
                     <TableCell align="center">
                       {new Date(t.CreationDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell align="center">
-                      {t.IdEmployeeNavigation?.Name ?? "No asignado"}
                     </TableCell>
                     <TableCell align="center">Base de datos</TableCell>
                     <TableCell align="center">

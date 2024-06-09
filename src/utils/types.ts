@@ -49,6 +49,7 @@ export type TTicketValue = {
   IdEmployeeNavigation?: {
     Name: string;
   };
+  IdUserNavigation: TTicketUser;
   BackupFiles: {
     $values: TBackupFiles[];
   };
@@ -61,6 +62,7 @@ export type TTicketValue = {
     $values: {
       Comment: string;
       Date: string;
+      IdUserNavigation: TTicketUser;
     }[];
   };
 };
@@ -79,3 +81,13 @@ export type TEmployee = {
   companyName: string;
   jobPosition: string;
 };
+
+export type TTicketUser = {
+  IdUser: 1;
+  IdUserCategory: 1;
+  Name: string;
+  Email: string;
+  Cellphone: string;
+  CompanyName: string;
+  JobPosition: string;
+} | null;

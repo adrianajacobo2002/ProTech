@@ -6,12 +6,10 @@ import Image from "next/image";
 import imgDev from "@/assets/images/Programming-bro.png";
 import Button from "@/components/button-showtickets";
 import useUser from "@/hooks/useUser";
-import useTickets from "@/hooks/useTickets";
 import { useRouter } from "next-nprogress-bar";
 
 export default function WelcomeCard() {
   const { user } = useUser();
-  const { tickets } = useTickets(user!.idUser);
   const router = useRouter();
 
   const handleVerTicketsClick = () => {

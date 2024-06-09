@@ -17,15 +17,16 @@ import Card from "react-bootstrap/Card";
 import Autocomplete from "@mui/material/Autocomplete";
 import useUser from "@/hooks/useUser";
 import { TTicketValue } from "@/utils/types";
-import { Button, CircularProgress } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { API_URL } from "@/utils/consts";
 import { toast } from "react-toastify";
 import useSupports from "@/hooks/useSupports";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { asignTicket } from "@/services/tickets.service";
+import useTickets from "@/hooks/useTickets";
+import useAssignedTickets from "@/hooks/useAssignedTickets";
 
 import styles from "./styles.module.scss";
-import useTickets from "@/hooks/useTickets";
 
 interface TicketReportProps {
   ticket: TTicketValue;
@@ -39,11 +40,12 @@ const Demo = styled("div")(({ theme }) => ({
 
 function TicketReport(props: TicketReportProps) {
   const { ticket: t } = props;
-  const [comentario, setComentario] = useState("");
   const { user } = useUser();
   const { supports } = useSupports();
   const { refetchTickets } = useTickets(user?.idUser ?? 0);
+  const { reloadAssignedTickets } = useAssignedTickets(user?.idUser ?? 0);
 
+  //#region AssignTicketForm
   const {
     control: assignTicketControl,
     handleSubmit: handleAssignTicketSubmit,
@@ -78,6 +80,47 @@ function TicketReport(props: TicketReportProps) {
       type: "success",
     });
   };
+  //#endregion
+
+  //#region CommentForm
+  const {
+    control: commentFormControl,
+    handleSubmit: handleCommentSubmit,
+    formState: { isSubmitting: commenting },
+    reset: commentFormReset,
+  } = useForm<{ comment: string }>({
+    defaultValues: {
+      comment: "",
+    },
+  });
+
+  const handleCommentFormSubmit: SubmitHandler<{ comment: string }> = async ({
+    comment,
+  }) => {
+    await fetch(`${API_URL}/Comment/AddComment?ticketId=${t.IdTicket}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        comment,
+        idUser: user!.idUser,
+      }),
+    });
+
+    t.TicketComments.$values.push({
+      Comment: comment,
+      Date: new Date().toLocaleDateString(),
+      IdUserNavigation: null,
+    });
+
+    reloadAssignedTickets();
+    commentFormReset();
+    toast("Comentario agregado exitosamente", {
+      type: "success",
+    });
+  };
+  //#endregion
 
   if (!t) return;
   return (
@@ -128,7 +171,7 @@ function TicketReport(props: TicketReportProps) {
               <p>
                 <b>Nombres</b>
               </p>
-              <p>{user?.name}</p>
+              <p>{t.IdUserNavigation?.Name}</p>
             </Col>
           </Row>
         </div>
@@ -139,13 +182,13 @@ function TicketReport(props: TicketReportProps) {
               <p>
                 <b>Correo Electrónico</b>
               </p>
-              <p>{user?.email}</p>
+              <p>{t.IdUserNavigation?.Email}</p>
             </Col>
             <Col md={6}>
               <p>
                 <b>Número Teléfonico</b>
               </p>
-              <p>{user?.cellphone}</p>
+              <p>{t.IdUserNavigation?.Cellphone}</p>
             </Col>
           </Row>
         </div>
@@ -250,52 +293,102 @@ function TicketReport(props: TicketReportProps) {
           {t.TicketComments.$values.map((c, i) => (
             <div key={i}>
               <p>{c.Comment}</p>
-              <h6 style={{ fontSize: 12 }}>
-                {new Date(c.Date).toLocaleDateString()}
-              </h6>
+              <Box>
+                <h6 style={{ fontSize: 12 }}>
+                  {new Date(c.Date).toLocaleDateString()} -{" "}
+                  {c.IdUserNavigation?.Name}
+                </h6>
+              </Box>
               <hr />
             </div>
           ))}
+          {t.IdEmployee == user?.idUser && (
+            <Card body className="text-center">
+              <form onSubmit={handleCommentSubmit(handleCommentFormSubmit)}>
+                <Row>
+                  <Col>
+                    <Controller
+                      control={commentFormControl}
+                      name="comment"
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          fullWidth
+                          id="outlined-multiline-flexible"
+                          label="Comentario"
+                          multiline
+                          rows={2}
+                        />
+                      )}
+                    />
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Button variant="contained" type="submit" sx={{ mt: 3 }}>
+                      {commenting ? <CircularProgress /> : "Agregar comentario"}
+                    </Button>
+                  </Col>
+                </Row>
+              </form>
+            </Card>
+          )}
+        </div>
+        <div>
+          <h5>Tareas</h5>
           <Card body className="text-center">
-            <Row>
-              <Col>
-                <TextField
-                  fullWidth
-                  id="outlined-multiline-flexible"
-                  label="Comentario"
-                  multiline
-                  rows={2}
-                  value={comentario}
-                  onChange={(e) => setComentario(e.target.value)}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                <Button
-                  variant="contained"
-                  onClick={async () => {
-                    await fetch(
-                      `${API_URL}/Comment/AddComment?ticketId=${t.IdTicket}`,
-                      {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ comment: comentario }),
-                      }
-                    );
+            <div className="py-2">
+              <TextField
+                fullWidth
+                id="outlined-multiline-flexible"
+                label="Descripción de la tarea"
+                multiline
+                rows={2}
+              />
+            </div>
+            <div className="py-2">
+              <Autocomplete
+                disablePortal
+                id="combo-box-demo"
+                options={supports
+                  .filter((s) => s.idUser != user?.idUser)
+                  .map((s) => ({
+                    label: s.name,
+                    value: s.idUser,
+                  }))}
+                renderInput={(params) => (
+                  <TextField {...params} label="Agente" />
+                )}
+              />
+            </div>
+            <div>
+              <Button className={styles["btn-sendInfo"]} variant="contained">
+                Asignar Tarea
+              </Button>
+            </div>
+          </Card>
+        </div>
 
-                    setComentario("");
-                    toast("Comentario agregado exitosamente", {
-                      type: "success",
-                    });
-                  }}
-                >
-                  Agregar comentario
-                </Button>
-              </Col>
-            </Row>
+        <div className="py-5">
+          <h5>Historial Tareas</h5>
+          <Card body>
+            <div className="py-2 text-center">
+              <Row>
+                <Col md={4}>
+                  <small>
+                    <s>Reiniciar el modem</s>
+                  </small>
+                </Col>
+                <Col md={4}>
+                  <small>
+                    <s>Jose P.</s>
+                  </small>
+                </Col>
+                <Col md={4}>
+                  <small className={styles["word"]}>Abierto</small>
+                </Col>
+              </Row>
+            </div>
           </Card>
         </div>
       </Modal.Body>
