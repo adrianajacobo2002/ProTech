@@ -26,10 +26,14 @@ import Modal from "react-bootstrap/Modal";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import style from "./style.module.scss";
+import useStats from "@/hooks/useStats";
+import useUser from "@/hooks/useUser";
 
 export default function Dashboard() {
   const [modalShow, setModalShow] = React.useState(false);
   const [ChangePShow, setChangePShow] = React.useState(false);
+  const { user } = useUser();
+  const { stats, statsLoading } = useStats(user?.idUser ?? 0);
 
   const handleShowModal = () => setModalShow(true);
   const handleHideModal = () => setModalShow(false);
@@ -38,14 +42,6 @@ export default function Dashboard() {
     <div>
       <div className="d-flex justify-content-end pb-4">
         <ButtonCrear />
-
-        <Button variant="contained" onClick={() => setChangePShow(true)}>
-          Pa activar la modal
-        </Button>
-        <ChangePasswordModal
-          show={ChangePShow}
-          onHide={() => setChangePShow(false)}
-        />
       </div>
 
       <div>
@@ -98,94 +94,128 @@ export default function Dashboard() {
               </h4>
 
               <Row className="align-items-center">
-                <Col md={4} className="align-content-center">
-                  <ul>
-                    <li className="mb-2 d-flex align-items-center pb-4">
-                      <Avatar style={{backgroundColor:'var(--green)', color:"black"}}>
-                        <ChecklistRoundedIcon />
-                      </Avatar>
-                      <div className="">
-                        <div className="ms-4">
-                          <Row>
-                            <Col>
-                              <p
-                                style={{ fontSize: "25px", fontWeight: "bold" }}
-                              >
-                                10
-                              </p>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col>Total</Col>
-                          </Row>
+                {statsLoading || (
+                  <Col md={4} className="align-content-center">
+                    <ul>
+                      <li className="mb-2 d-flex align-items-center pb-4">
+                        <Avatar
+                          style={{
+                            backgroundColor: "var(--green)",
+                            color: "black",
+                          }}
+                        >
+                          <ChecklistRoundedIcon />
+                        </Avatar>
+                        <div className="">
+                          <div className="ms-4">
+                            <Row>
+                              <Col>
+                                <p
+                                  style={{
+                                    fontSize: "25px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {stats?.total}
+                                </p>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col>Total</Col>
+                            </Row>
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                    <li className="mb-2 d-flex align-items-center pb-4">
-                      <Avatar style={{backgroundColor:'var(--green)', color:"black"}}>
-                        <CheckCircleOutlineRoundedIcon />
-                      </Avatar>
-                      <div className="">
-                        <div className="ms-4">
-                          <Row>
-                            <Col>
-                              <p
-                                style={{ fontSize: "25px", fontWeight: "bold" }}
-                              >
-                                2
-                              </p>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col>Resueltos</Col>
-                          </Row>
+                      </li>
+                      <li className="mb-2 d-flex align-items-center pb-4">
+                        <Avatar
+                          style={{
+                            backgroundColor: "var(--green)",
+                            color: "black",
+                          }}
+                        >
+                          <CheckCircleOutlineRoundedIcon />
+                        </Avatar>
+                        <div className="">
+                          <div className="ms-4">
+                            <Row>
+                              <Col>
+                                <p
+                                  style={{
+                                    fontSize: "25px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {stats?.resueltos}
+                                </p>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col>Resueltos</Col>
+                            </Row>
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                    <li className="mb-2 d-flex align-items-center pb-4">
-                      <Avatar style={{backgroundColor:'var(--green)', color:"black"}}>
-                        <AutoModeRoundedIcon />
-                      </Avatar>{" "}
-                      <div className="">
-                        <div className="ms-4">
-                          <Row>
-                            <Col>
-                              <p
-                                style={{ fontSize: "25px", fontWeight: "bold" }}
-                              >
-                                6
-                              </p>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col>En Progreso</Col>
-                          </Row>
+                      </li>
+                      <li className="mb-2 d-flex align-items-center pb-4">
+                        <Avatar
+                          style={{
+                            backgroundColor: "var(--green)",
+                            color: "black",
+                          }}
+                        >
+                          <AutoModeRoundedIcon />
+                        </Avatar>{" "}
+                        <div className="">
+                          <div className="ms-4">
+                            <Row>
+                              <Col>
+                                <p
+                                  style={{
+                                    fontSize: "25px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {stats?.progreso}
+                                </p>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col>En Progreso</Col>
+                            </Row>
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                    <li className="mb-2 d-flex align-items-center">
-                      <Avatar style={{backgroundColor:'var(--green)', color:"black"}}>
-                        <HistoryToggleOffRoundedIcon />{" "}
-                      </Avatar>
-                      <div className="">
-                        <div className="ms-4">
-                          <Row>
-                            <Col>
-                              <p
-                                style={{ fontSize: "25px", fontWeight: "bold" }}
-                              >
-                                2
-                              </p>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col>En Espera</Col>
-                          </Row>
+                      </li>
+                      <li className="mb-2 d-flex align-items-center">
+                        <Avatar
+                          style={{
+                            backgroundColor: "var(--green)",
+                            color: "black",
+                          }}
+                        >
+                          <HistoryToggleOffRoundedIcon />{" "}
+                        </Avatar>
+                        <div className="">
+                          <div className="ms-4">
+                            <Row>
+                              <Col>
+                                <p
+                                  style={{
+                                    fontSize: "25px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {stats?.espera}
+                                </p>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col>En Espera</Col>
+                            </Row>
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  </ul>
-                </Col>
+                      </li>
+                    </ul>
+                  </Col>
+                )}
                 <Col md={8}>
                   <Image
                     src={imgpc}
@@ -200,60 +230,5 @@ export default function Dashboard() {
         </Row>
       </div>
     </div>
-  );
-}
-
-interface ChangePProps {
-  show: boolean;
-  onHide: () => void;
-}
-
-function ChangePasswordModal(props: ChangePProps) {
-  return (
-    <Modal
-      {...props}
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-      scrollable
-    >
-      <Modal.Body className="p-5">
-        <div className="text-center">
-          <div className="pb-5">
-            <Image src={img} alt="Logo de Protech" width={75} height={75} />
-          </div>
-          <div>
-            <h5>¡Actualización de Contraseña Requerida!</h5>
-            <p>
-              Para garantizar la seguridad de tu cuenta, te solicitamos que
-              actualices tu contraseña por defecto al iniciar sesión por primera
-              vez.
-            </p>
-          </div>
-          <div>
-            <Row className="py-3">
-              <Col>
-                <TextField
-                  fullWidth
-                  id="outlined-basic"
-                  type="password"
-                  label="Actualizar Contraseña"
-                  variant="outlined"
-                />
-              </Col>
-            </Row>
-          </div>
-
-          <div>
-            <Button
-              fullWidth
-              variant="contained"
-              className={style["btn-updatePassword"]}
-            >
-              Actualizar Contraseña
-            </Button>
-          </div>
-        </div>
-      </Modal.Body>
-    </Modal>
   );
 }

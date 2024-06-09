@@ -1,31 +1,28 @@
 "use client";
-import * as React from "react";
+
+import { useState } from "react";
 import Modal from "react-bootstrap/Modal";
-import Dropdown from "react-bootstrap/Dropdown";
 import { Col, Row } from "react-bootstrap";
-import Form from "react-bootstrap/Form";
-import Button from "@mui/material/Button";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import style from "./styles.module.scss";
 import Image from "next/image";
 import logoLetra from "@/assets/images/logoLetras.svg";
 import TextField from "@mui/material/TextField";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { styled } from "@mui/material/styles";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
 import FolderIcon from "@mui/icons-material/Folder";
 import Card from "react-bootstrap/Card";
 import Autocomplete from "@mui/material/Autocomplete";
+import useUser from "@/hooks/useUser";
+import { TTicketValue } from "@/utils/types";
+import { Button } from "@mui/material";
+import { API_URL } from "@/utils/consts";
+import { toast } from "react-toastify";
 
 interface TicketReportProps {
+  ticket: TTicketValue;
   show: boolean;
   onHide: () => void;
 }
@@ -35,21 +32,12 @@ const Demo = styled("div")(({ theme }) => ({
 }));
 
 function TicketReport(props: TicketReportProps) {
-  {
-    /* Dropdown */
-  }
-  const [estado, setEstado] = React.useState("");
+  const [comentario, setComentario] = useState("");
+  const [dense, setDense] = useState(false);
+  const { user } = useUser();
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setEstado(event.target.value as string);
-  };
-
-  {
-    /* Listado de Archivo*/
-  }
-  const [dense, setDense] = React.useState(false);
-  const [secondary, setSecondary] = React.useState(false);
-
+  const { ticket: t } = props;
+  if (!t) return;
   return (
     <Modal
       {...props}
@@ -62,30 +50,28 @@ function TicketReport(props: TicketReportProps) {
         <div className="text-center">
           <Image src={logoLetra} alt="Logo ProTech" width={300} height={150} />
         </div>
-        <h5 className="pb-4"><b>Información General</b></h5>
+        <h5 className="pb-4">
+          <b>Información General</b>
+        </h5>
         <div className="pb-3">
           <p>
             <b>Nombre de Aplicación o Servicio</b>
           </p>
-          <p>ByteSavvy</p>
+          <p>{t.Name}</p>
         </div>
 
         <div className="pb-3">
           <p>
             <b>Descripción</b>
           </p>
-          <p>
-            La semana pasada nos enteramos de que hubo una brecha de seguridad
-            en la aplicación y algunos de nuestros datos confidenciales fueron
-            comprometidos.
-          </p>
+          <p>{t.Description}</p>
         </div>
 
         <div className="pb-3">
           <p>
             <b>Prioridad</b>
           </p>
-          <p>Crítico</p>
+          <p>{t.Priority}</p>
         </div>
 
         <div className="pb-3">
@@ -96,17 +82,11 @@ function TicketReport(props: TicketReportProps) {
 
         <div className="pb-3">
           <Row>
-            <Col md={6}>
+            <Col>
               <p>
                 <b>Nombres</b>
               </p>
-              <p>José</p>
-            </Col>
-            <Col md={6}>
-              <p>
-                <b>Apellidos</b>
-              </p>
-              <p>Perez</p>
+              <p>{user?.name}</p>
             </Col>
           </Row>
         </div>
@@ -117,13 +97,13 @@ function TicketReport(props: TicketReportProps) {
               <p>
                 <b>Correo Electrónico</b>
               </p>
-              <p>joseperez@gmail.com</p>
+              <p>{user?.email}</p>
             </Col>
             <Col md={6}>
               <p>
                 <b>Número Teléfonico</b>
               </p>
-              <p>0000-0000</p>
+              <p>{user?.cellphone}</p>
             </Col>
           </Row>
         </div>
@@ -135,12 +115,14 @@ function TicketReport(props: TicketReportProps) {
             </p>
             <Demo>
               <List dense={dense}>
-                <ListItem>
-                  <ListItemIcon>
-                    <FolderIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Pruebas.pdf" />
-                </ListItem>
+                {t.BackupFiles.$values.map((bf, i) => (
+                  <ListItem key={i}>
+                    <ListItemIcon>
+                      <FolderIcon />
+                    </ListItemIcon>
+                    <ListItemText primary={bf.Name} />
+                  </ListItem>
+                ))}
                 <hr />
               </List>
             </Demo>
@@ -148,133 +130,61 @@ function TicketReport(props: TicketReportProps) {
         </div>
 
         <div className="pb-3">
-          <h5>Actualizar Ticket</h5>
-          <Card body className="px-3">
-            <Row>
-              <Col md={6}>
-                <p>
-                  <b>Número de Ticket</b>
-                </p>
-                <p>T-12345678</p>
-              </Col>
-              <Col md={6}>
-                <div>
-                  <div className="pb-3">
-                    <FormControl fullWidth>
-                      <InputLabel id="demo-simple-select-label">
-                        Estado
-                      </InputLabel>
-                      <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        value={estado}
-                        label="Estado"
-                        onChange={handleChange}
-                      >
-                        <MenuItem value={1}>En Progreso</MenuItem>
-                        <MenuItem value={2}>
-                          En espera de información del cliente
-                        </MenuItem>
-                        <MenuItem value={3}>Resuelto</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <div>
-              <TextField
-                fullWidth
-                id="outlined-multiline-flexible"
-                label="Comentario"
-                multiline
-                rows={2}
-              />
-            </div>
-            <div className="pt-4">
-              <Button
-                fullWidth
-                className={style["btn-sendInfo"]}
-                variant="contained"
-              >
-                Actualizar
-              </Button>
-            </div>
-          </Card>
+          <h5>Estado del ticket</h5>
+          <p>{t.State}</p>
         </div>
 
         <div className="py-4">
           <h5>Historial</h5>
+          {t.TicketComments.$values.map((c, i) => (
+            <div key={i}>
+              <p>{c.comment}</p>
+              <h6 style={{ fontSize: 12 }}>
+                {new Date(c.date).toLocaleDateString()}
+              </h6>
+              <hr />
+            </div>
+          ))}
           <Card body className="text-center">
             <Row>
-              <Col md={4}>
-                <p>T-12345678</p>
-                <small className={style["word"]}>En Progreso</small>
-              </Col>
-              <Col md={8}>
+              <Col>
                 <TextField
                   fullWidth
-                  disabled
                   id="outlined-multiline-flexible"
                   label="Comentario"
                   multiline
                   rows={2}
+                  value={comentario}
+                  onChange={(e) => setComentario(e.target.value)}
                 />
               </Col>
             </Row>
-          </Card>
-        </div>
+            <Row>
+              <Col>
+                <Button
+                  variant="contained"
+                  onClick={async () => {
+                    await fetch(
+                      `${API_URL}/Comment/AddComment?ticketId=${t.IdTicket}`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ comment: comentario }),
+                      }
+                    );
 
-        <div>
-          <h5>Tareas</h5>
-          <Card body className="text-center">
-            <div className="py-2">
-              <TextField
-                fullWidth
-                id="outlined-multiline-flexible"
-                label="Descripción de la tarea"
-                multiline
-                rows={2}
-              />
-            </div>
-            <div className="py-2">
-              <Autocomplete
-                disablePortal
-                id="combo-box-demo"
-                options={people}
-                renderInput={(params) => (
-                  <TextField {...params} label="Agente" />
-                )}
-              />
-            </div>
-            <div>
-              <Button className={style["btn-sendInfo"]} variant="contained">
-                Asignar Tarea
-              </Button>
-            </div>
-          </Card>
-        </div>
-
-        <div className="py-5">
-          <h5>Historial Tareas</h5>
-          <Card body>
-            <div className="py-2 text-center">
-              <Row>
-                <Col md={4}>
-                  <small>
-                    <s>Reiniciar el modem</s>
-                  </small>
-                </Col>
-                <Col md={4}>
-                  <small>
-                    <s>Jose P.</s>
-                  </small>
-                </Col>
-                <Col md={4}>
-                  <small className={style["word"]}>Abierto</small>
-                </Col>
-              </Row>
-            </div>
+                    setComentario("");
+                    toast("Comentario agregado exitosamente", {
+                      type: "success",
+                    });
+                  }}
+                >
+                  Agregar comentario
+                </Button>
+              </Col>
+            </Row>
           </Card>
         </div>
       </Modal.Body>
@@ -283,12 +193,19 @@ function TicketReport(props: TicketReportProps) {
 }
 
 interface TicketReportModalProps {
+  ticket: TTicketValue;
   show: boolean;
   onHide: () => void;
 }
 
 export default function CreateTicketModal(props: TicketReportModalProps) {
-  return <TicketReport show={props.show} onHide={props.onHide} />;
+  return (
+    <TicketReport
+      show={props.show}
+      onHide={props.onHide}
+      ticket={props.ticket}
+    />
+  );
 }
 
 const people = [

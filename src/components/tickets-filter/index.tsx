@@ -29,10 +29,12 @@ const TicketsFilter: React.FC<TicketsFilterProps> = ({ show, handleClose }) => {
     setEstado(event.target.value as string);
   };
   return (
-    <Offcanvas show={show} onHide={handleClose}>
+    <Offcanvas show={show} onHide={handleClose} placement="end">
       <Offcanvas.Body>
         <div className="p-4">
-          <p className="py-3"><b>Filtrar Por:</b></p>
+          <p className="py-3">
+            <b>Filtrar Por:</b>
+          </p>
 
           <div className="pb-3">
             <FormControl fullWidth>
@@ -71,8 +73,8 @@ const TicketsFilter: React.FC<TicketsFilterProps> = ({ show, handleClose }) => {
           </div>
           <div className="pb-3">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer  components={["DatePicker"]}>
-                <DatePicker  label="Fecha Final" />
+              <DemoContainer components={["DatePicker"]}>
+                <DatePicker label="Fecha Final" />
               </DemoContainer>
             </LocalizationProvider>
           </div>

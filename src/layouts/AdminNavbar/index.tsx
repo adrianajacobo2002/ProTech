@@ -2,19 +2,12 @@
 
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { styled, useTheme, Theme, CSSObject } from "@mui/material/styles";
+import { styled, Theme, CSSObject } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
 import List from "@mui/material/List";
 import CssBaseline from "@mui/material/CssBaseline";
-import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -62,29 +55,6 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   ...theme.mixins.toolbar,
 }));
 
-interface AppBarProps extends MuiAppBarProps {
-  open?: boolean;
-}
-
-const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== "open",
-})<AppBarProps>(({ theme, open }) => ({
-  zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(["width", "margin"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  backgroundColor: "#BAF266",
-  ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(["width", "margin"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  }),
-}));
-
 const Drawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
@@ -103,18 +73,9 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 export default function AdminNavbar() {
-  const { deleteUser } = useUser();
+  const { deleteUser, user } = useUser();
   const router = useRouter();
-  const theme = useTheme();
-  const [open, setOpen] = useState(false);
-
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
+  const [open] = useState(false);
 
   const handleLogout = async () => {
     const success = await logout();
@@ -125,83 +86,105 @@ export default function AdminNavbar() {
       return;
     }
 
-    deleteUser();
     router.push("/login");
   };
 
+  const handleHomeClick = () => {
+    const userRolesUrl = {
+      Administrator: "administrador",
+      User: "cliente",
+      Support: "soporte",
+    };
+    const { userCategoryName } = user!;
+    router.push(
+      `/users/${userRolesUrl[userCategoryName as keyof typeof userRolesUrl]}`
+    );
+  };
+
+  const handleUsersClick = () => {
+    router.push("/users/administrador/users-report");
+  };
+
+  const handleMyTicketssClick = () => {
+    router.push("/users/mis-tickets");
+  };
+
   const menuItems = [
-    { text: "Inicio", icon: <HomeRoundedIcon /> },
-    { text: "Tickets", icon: <ConfirmationNumberRoundedIcon /> },
-    { text: "Tareas", icon: <FormatListBulletedRoundedIcon /> },
-    { text: "Usuarios", icon: <PeopleAltRoundedIcon /> },
-    { text: "Mis Tickets", icon: <LocalActivityRoundedIcon /> },
+    {
+      text: "Inicio",
+      icon: <HomeRoundedIcon />,
+      onClick: handleHomeClick,
+      show: true,
+    },
+    {
+      text: "Mis Tickets",
+      icon: <LocalActivityRoundedIcon />,
+      show: true,
+      onClick: handleMyTicketssClick,
+    },
+    {
+      text: "Tickets",
+      icon: <ConfirmationNumberRoundedIcon />,
+      show: user?.userCategoryName != "User",
+    },
+    {
+      text: "Tareas",
+      icon: <FormatListBulletedRoundedIcon />,
+      show: user?.userCategoryName == "Support",
+    },
+    {
+      text: "Usuarios",
+      icon: <PeopleAltRoundedIcon />,
+      show: user?.userCategoryName == "Administrator",
+      onClick: handleUsersClick,
+    },
     {
       text: "Cerrar Sesión",
       icon: <LogoutRoundedIcon />,
       onClick: handleLogout,
+      show: true,
     },
   ];
 
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={{
-              marginRight: 5,
-              ...(open && { display: "none" }),
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Dashboard
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Drawer variant="permanent" open={open}>
-        <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "rtl" ? (
-              <ChevronRightIcon />
-            ) : (
-              <ChevronLeftIcon />
-            )}
-          </IconButton>
-        </DrawerHeader>
+      <Drawer variant="permanent">
+        <DrawerHeader></DrawerHeader>
         <Divider />
         <List>
-          {menuItems.map((item, index) => (
-            <ListItem key={item.text} disablePadding sx={{ display: "block" }}>
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
+          {menuItems
+            .filter((m) => m.show)
+            .map((item) => (
+              <ListItem
+                key={item.text}
+                disablePadding
+                sx={{ display: "block" }}
               >
-                <ListItemIcon
+                <ListItemButton
                   sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
+                    minHeight: 48,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
                   }}
-                  onClick={item.onClick}
                 >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : "auto",
+                      justifyContent: "center",
+                    }}
+                    onClick={item.onClick}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{ opacity: open ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
         </List>
       </Drawer>
     </Box>

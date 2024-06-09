@@ -17,6 +17,7 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { CircularProgress } from "@mui/material";
 import { createTicket } from "@/services/tickets.service";
 import { toast } from "react-toastify";
+import useStats from "@/hooks/useStats";
 
 interface CreateTicketProps {
   show: boolean;
@@ -25,6 +26,7 @@ interface CreateTicketProps {
 
 function CreateTicket(props: CreateTicketProps) {
   const { user } = useUser();
+  const { refetchStats } = useStats(user?.idUser ?? 0);
   const {
     control,
     handleSubmit,
@@ -55,11 +57,11 @@ function CreateTicket(props: CreateTicketProps) {
       return;
     }
 
+    await refetchStats();
     props.onHide();
     toast("Ticket creado con éxito", {
       type: "success",
     });
-    // TODO: Actualizar ticket
   };
 
   return (

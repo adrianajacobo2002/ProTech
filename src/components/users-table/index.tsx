@@ -1,5 +1,5 @@
 "use client";
-import * as React from "react";
+
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -16,9 +16,56 @@ import RemoveCircleOutlineRoundedIcon from "@mui/icons-material/RemoveCircleOutl
 import Modal from "react-bootstrap/Modal";
 import TextField from "@mui/material/TextField";
 import { Col, Row } from "react-bootstrap";
+import useUsers from "@/hooks/useUsers";
+import { TUser } from "@/utils/types";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { API_URL } from "@/utils/consts";
 
-export default function UsersTable() {
-  const [modalShow, setModalShow] = React.useState(false);
+type Props = {
+  users: TUser[];
+};
+
+export default function UsersTable({ users }: Props) {
+  const { refetchUsers } = useUsers();
+  const [selectedUser, setSelectedUser] = useState<TUser>();
+
+  const handleGivePermissions = async () => {
+    try {
+      await fetch(`${API_URL}/User/ToSupport?userId=${selectedUser?.idUser}`, {
+        method: "PUT",
+      });
+
+      await refetchUsers();
+      toast("Permisos otorgados exitosamente", {
+        type: "success",
+      });
+      setSelectedUser(undefined);
+    } catch (error: any) {
+      toast("Problemas otorgando permisos", {
+        type: "error",
+      });
+    }
+  };
+
+  const handleRemovePermissions = async () => {
+    try {
+      await fetch(`${API_URL}/User/ToClient?userId=${selectedUser?.idUser}`, {
+        method: "PUT",
+      });
+
+      await refetchUsers();
+      toast("Permisos removidos exitosamente", {
+        type: "success",
+      });
+      setSelectedUser(undefined);
+    } catch (error: any) {
+      toast("Problemas quitando permisos", {
+        type: "error",
+      });
+    }
+  };
+
   return (
     <>
       <Paper sx={{ width: "100%", overflow: "hidden" }}>
@@ -28,7 +75,7 @@ export default function UsersTable() {
               <TableRow>
                 <TableCell align="center">ID Usuario</TableCell>
                 <TableCell align="center">Nombres</TableCell>
-                <TableCell align="center">Apellidos</TableCell>
+                <TableCell align="center">Número de teléfono</TableCell>
                 <TableCell align="center">Email</TableCell>
                 <TableCell align="center">Rol</TableCell>
                 <TableCell align="center">Ver Información</TableCell>
@@ -36,155 +83,148 @@ export default function UsersTable() {
             </TableHead>
 
             <TableBody>
-              <TableRow>
-                <TableCell component="th" scope="row" align="center">
-                  12345678
-                </TableCell>
-                <TableCell align="center">Jose P.</TableCell>
-                <TableCell align="center">Apellido1</TableCell>
-                <TableCell align="center">jose@gmail.com</TableCell>
-                <TableCell align="center">
-                  <p className={style["employee-role"]}>Administrador</p>
-                </TableCell>
-                <TableCell
-                  align="center"
-                  className="justify-content-center align-items-center align-content-center"
-                >
-                  <IconButton
-                    aria-label="View Detail"
-                    size="large"
-                    onClick={() => setModalShow(true)}
+              {users?.map((u) => (
+                <TableRow>
+                  <TableCell component="th" scope="row" align="center">
+                    {u.idUser}
+                  </TableCell>
+                  <TableCell align="center">{u.name}</TableCell>
+                  <TableCell align="center">{u.cellphone}</TableCell>
+                  <TableCell align="center">{u.email}</TableCell>
+                  <TableCell align="center">
+                    <p className={style["employee-role"]}>
+                      {u.userCategoryName}
+                    </p>
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    className="justify-content-center align-items-center align-content-center"
                   >
-                    <InfoRoundedIcon fontSize="inherit" />
-                  </IconButton>
-                  <UserInformationModal
-                    show={modalShow}
-                    onHide={() => setModalShow(false)}
-                  />
-                </TableCell>
-              </TableRow>
+                    <IconButton
+                      aria-label="View Detail"
+                      size="large"
+                      onClick={() => {
+                        setSelectedUser(u);
+                      }}
+                    >
+                      <InfoRoundedIcon fontSize="inherit" />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {selectedUser && (
+                <Modal
+                  show={true}
+                  onHide={() => setSelectedUser(undefined)}
+                  size="lg"
+                  aria-labelledby="contained-modal-title-vcenter"
+                  centered
+                  scrollable
+                >
+                  <Modal.Body className="p-5">
+                    <small className={style["word"]}>
+                      Cliente{" "}
+                      {selectedUser!.userCategoryName == "User"
+                        ? "Externo"
+                        : "Interno"}
+                    </small>
+
+                    <div className="text-center">
+                      <div>
+                        <Row className="py-3">
+                          <Col>
+                            <TextField
+                              fullWidth
+                              disabled
+                              id="outlined-basic"
+                              type="name"
+                              label="Nombres"
+                              variant="outlined"
+                              size="small"
+                              value={selectedUser!.name}
+                            />
+                          </Col>
+                          <Col>
+                            <TextField
+                              fullWidth
+                              disabled
+                              id="outlined-basic"
+                              type="email"
+                              label="Correo Electrónico"
+                              variant="outlined"
+                              size="small"
+                              value={selectedUser!.email}
+                            />
+                          </Col>
+                        </Row>
+                      </div>
+                      <div>
+                        <Row className="py-3">
+                          <Col>
+                            <TextField
+                              fullWidth
+                              disabled
+                              id="outlined-basic"
+                              label="Número Telefónico"
+                              variant="outlined"
+                              size="small"
+                              value={selectedUser!.cellphone}
+                            />
+                          </Col>
+                        </Row>
+                      </div>
+                      <div>
+                        <Row className="py-3">
+                          <Col>
+                            <TextField
+                              fullWidth
+                              disabled
+                              id="outlined-basic"
+                              type="text"
+                              label="Nombre de la Empresa"
+                              variant="outlined"
+                              size="small"
+                              value={selectedUser!.companyName}
+                            />
+                          </Col>
+                        </Row>
+                      </div>
+                      <div className="pt-4">
+                        <Row>
+                          <Col>
+                            {selectedUser!.userCategoryName == "User" && (
+                              <Button
+                                fullWidth
+                                variant="contained"
+                                className={style["btn-createEmployee"]}
+                                startIcon={<AdminPanelSettingsRoundedIcon />}
+                                onClick={handleGivePermissions}
+                              >
+                                Otorgar Permisos
+                              </Button>
+                            )}
+                            {selectedUser!.userCategoryName == "Support" && (
+                              <Button
+                                fullWidth
+                                variant="contained"
+                                className={style["btn-createClient"]}
+                                startIcon={<RemoveCircleOutlineRoundedIcon />}
+                                onClick={handleRemovePermissions}
+                              >
+                                Remover Permisos
+                              </Button>
+                            )}
+                          </Col>
+                        </Row>
+                      </div>
+                    </div>
+                  </Modal.Body>
+                </Modal>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
       </Paper>
     </>
-  );
-}
-
-interface UserInfoProps {
-  show: boolean;
-  onHide: () => void;
-}
-
-function UserInformationModal(props: UserInfoProps) {
-  return (
-    <Modal
-      {...props}
-      size="lg"
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-      scrollable
-    >
-      <Modal.Body className="p-5">
-        <small className={style["word"]}>Cliente Externo</small>
-
-        <div className="text-center">
-          <div>
-            <Row className="py-3">
-              <Col md={6}>
-                <TextField
-                  fullWidth
-                  disabled
-                  id="outlined-basic"
-                  type="name"
-                  label="Nombres"
-                  variant="outlined"
-                  size="small"
-                />
-              </Col>
-              <Col md={6}>
-                <TextField
-                  disabled
-                  fullWidth
-                  id="outlined-basic"
-                  type="name"
-                  label="Apellidos"
-                  variant="outlined"
-                  size="small"
-                />
-              </Col>
-            </Row>
-          </div>
-          <div>
-            <Row className="py-3">
-              <Col>
-                <TextField
-                  fullWidth
-                  disabled
-                  id="outlined-basic"
-                  type="email"
-                  label="Correo Electrónico"
-                  variant="outlined"
-                  size="small"
-                />
-              </Col>
-            </Row>
-          </div>
-          <div>
-            <Row className="py-3">
-              <Col>
-                <TextField
-                  fullWidth
-                  disabled
-                  id="outlined-basic"
-                  label="Número Telefónico"
-                  variant="outlined"
-                  size="small"
-                />
-              </Col>
-            </Row>
-          </div>
-          <div>
-            <Row className="py-3">
-              <Col>
-                <TextField
-                  fullWidth
-                  disabled
-                  id="outlined-basic"
-                  type="text"
-                  label="Nombre de la Empresa"
-                  variant="outlined"
-                  size="small"
-                />
-              </Col>
-            </Row>
-          </div>
-          <div className="pt-4">
-            <Row>
-              <Col md={6}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  className={style["btn-createEmployee"]}
-                  startIcon={<AdminPanelSettingsRoundedIcon />}
-                >
-                  Otorgar Permisos
-                </Button>
-              </Col>
-              <Col md={6}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  className={style["btn-createClient"]}
-                  startIcon={<RemoveCircleOutlineRoundedIcon />}
-                >
-                  Remover Permisos
-                </Button>
-              </Col>
-            </Row>
-          </div>
-        </div>
-      </Modal.Body>
-    </Modal>
   );
 }

@@ -23,11 +23,13 @@ import CreateTicketModal from "@/components/ticket-report";
 import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
 import useUser from "@/hooks/useUser";
 import useStats from "@/hooks/useStats";
+import useTickets from "@/hooks/useTickets";
 
 export default function DashboardCliente() {
   const [modalShow, setModalShow] = useState(false);
   const { user } = useUser();
   const { stats, statsLoading } = useStats(user?.idUser ?? 0);
+  const { tickets } = useTickets(user!.idUser);
 
   const handleShowModal = () => setModalShow(true);
   const handleHideModal = () => setModalShow(false);
@@ -176,37 +178,45 @@ export default function DashboardCliente() {
                     <TableCell align="center">Agente</TableCell>
                     <TableCell align="center">Área</TableCell>
                     <TableCell align="center">Estado</TableCell>
-                    <TableCell align="center">Detalle</TableCell>
+                    <TableCell align="center">Prioridad</TableCell>
                   </TableRow>
                 </TableHead>
 
                 <TableBody>
-                  <TableRow>
-                    <TableCell component="th" scope="row" align="center">
-                      12345678
-                    </TableCell>
-                    <TableCell align="center">Jose P.</TableCell>
-                    <TableCell align="center">Ahora</TableCell>
-                    <TableCell align="center">Agente 1</TableCell>
-                    <TableCell align="center">Base de datos</TableCell>
-                    <TableCell align="center">Abierto</TableCell>
-                    <TableCell
-                      align="center"
-                      className="justify-content-center align-items-center align-content-center"
-                    >
-                      <IconButton
-                        aria-label="View Detail"
-                        size="large"
-                        onClick={handleShowModal}
-                      >
-                        <KeyboardArrowRightRoundedIcon fontSize="inherit" />
-                      </IconButton>
-                      <CreateTicketModal
-                        show={modalShow}
-                        onHide={handleHideModal}
-                      />
-                    </TableCell>
-                  </TableRow>
+                  {tickets
+                    ?.filter((t) => t.state == "EN PROGRESO")
+                    .map((t) => (
+                      <TableRow>
+                        <TableCell component="th" scope="row" align="center">
+                          {t.idTicket}
+                        </TableCell>
+                        <TableCell align="center">{t.name}</TableCell>
+                        <TableCell align="center">
+                          {t.creationDate.getDate()}
+                        </TableCell>
+                        <TableCell align="center">
+                          {t.idEmployee ?? "Sin asignar"}
+                        </TableCell>
+                        <TableCell align="center">{t.state}</TableCell>
+                        <TableCell align="center">{t.priority}</TableCell>
+                        <TableCell
+                          align="center"
+                          className="justify-content-center align-items-center align-content-center"
+                        >
+                          <IconButton
+                            aria-label="View Detail"
+                            size="large"
+                            onClick={handleShowModal}
+                          >
+                            <KeyboardArrowRightRoundedIcon fontSize="inherit" />
+                          </IconButton>
+                          <CreateTicketModal
+                            show={modalShow}
+                            onHide={handleHideModal}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </TableContainer>
