@@ -40,7 +40,7 @@ type TBackupFiles = {
 export type TTicketValue = {
   IdTicket: number;
   IdUser: number;
-  IdEmployee: number;
+  IdEmployee: number | undefined;
   Name: string;
   Description: string;
   Priority: TTicketPriorities;
@@ -68,4 +68,14 @@ export type TTicketValue = {
 export type TTicket = {
   $id: "1";
   $values: TTicketValue[];
+};
+
+export type TEmployee = {
+  idUser: number;
+  idUserCategory: number;
+  name: string;
+  email: string;
+  cellphone: string;
+  companyName: string;
+  jobPosition: string;
 };

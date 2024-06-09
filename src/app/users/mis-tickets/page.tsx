@@ -76,8 +76,8 @@ export default function TicketsResume() {
                 </TableRow>
               </TableHead>
 
-              {tickets?.map((t) => (
-                <TableBody>
+              {tickets?.map((t, i) => (
+                <TableBody key={i}>
                   <TableRow>
                     <TableCell component="th" scope="row" align="center">
                       {t.IdTicket}

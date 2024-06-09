@@ -8,3 +8,14 @@ export const createTicket = async (fd: FormData) => {
 
   return fetchRes.ok;
 };
+
+export const asignTicket = async (ticketId: number, employeeId: number) => {
+  const fetchRes = await fetch(
+    `${API_URL}/Ticket/Assign?ticketId=${ticketId}&employeeId=${employeeId}`,
+    {
+      method: "PUT",
+    }
+  );
+
+  return fetchRes.ok;
+};

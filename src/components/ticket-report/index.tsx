@@ -17,11 +17,15 @@ import Card from "react-bootstrap/Card";
 import Autocomplete from "@mui/material/Autocomplete";
 import useUser from "@/hooks/useUser";
 import { TTicketValue } from "@/utils/types";
-import { Button } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { API_URL } from "@/utils/consts";
 import { toast } from "react-toastify";
+import useSupports from "@/hooks/useSupports";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { asignTicket } from "@/services/tickets.service";
 
 import styles from "./styles.module.scss";
+import useTickets from "@/hooks/useTickets";
 
 interface TicketReportProps {
   ticket: TTicketValue;
@@ -34,11 +38,47 @@ const Demo = styled("div")(({ theme }) => ({
 }));
 
 function TicketReport(props: TicketReportProps) {
-  const [comentario, setComentario] = useState("");
-  const [dense, setDense] = useState(false);
-  const { user } = useUser();
-
   const { ticket: t } = props;
+  const [comentario, setComentario] = useState("");
+  const { user } = useUser();
+  const { supports } = useSupports();
+  const { refetchTickets } = useTickets(user?.idUser ?? 0);
+
+  const {
+    control: assignTicketControl,
+    handleSubmit: handleAssignTicketSubmit,
+    formState: { isSubmitting: assigningTicket },
+  } = useForm<TAssignTicketFormFields>({
+    defaultValues: {
+      employeeId: t?.IdEmployee ?? 0,
+    },
+  });
+
+  const handleAssignTicketFormSubmit: SubmitHandler<
+    TAssignTicketFormFields
+  > = async (data) => {
+    const { employeeId } = data;
+    if (employeeId == 0) {
+      toast("Selecciona un agente para asignar el ticket", {
+        type: "warning",
+      });
+      return;
+    }
+
+    const assigned = await asignTicket(t.IdTicket, employeeId);
+    if (!assigned) {
+      toast("Algo falló al asignar el ticket", {
+        type: "error",
+      });
+      return;
+    }
+
+    refetchTickets();
+    toast("Ticket asignado con éxito", {
+      type: "success",
+    });
+  };
+
   if (!t) return;
   return (
     <Modal
@@ -116,7 +156,7 @@ function TicketReport(props: TicketReportProps) {
               <b>Archivos de Respaldo</b>
             </p>
             <Demo>
-              <List dense={dense}>
+              <List dense={false}>
                 {t.BackupFiles.$values.map((bf, i) => (
                   <ListItem key={i}>
                     <ListItemIcon>
@@ -131,27 +171,74 @@ function TicketReport(props: TicketReportProps) {
           </Grid>
         </div>
 
-        {/* Se agregó botón para asignar el ticket  */}
         <div className="pb-5">
-          <h5>Asignar Ticket</h5>
-          <Card body className="text-center">
-            <div className="py-2">
-              <Autocomplete
-                disablePortal
-                id="combo-box-demo"
-                options={people}
-                renderInput={(params) => (
-                  <TextField {...params} label="Agente" />
-                )}
-              />
-            </div>
-            <div>
-              <Button className={styles["btn-sendInfo"]} variant="contained">
-                Asignar Ticket
-              </Button>
-            </div>
-          </Card>
+          {user?.userCategoryName == "Administrator" ? (
+            <>
+              <h5>Asignar Ticket</h5>
+              <Card body className="text-center">
+                <form
+                  onSubmit={handleAssignTicketSubmit(
+                    handleAssignTicketFormSubmit
+                  )}
+                >
+                  <div className="py-2">
+                    <Controller
+                      control={assignTicketControl}
+                      name="employeeId"
+                      render={({ field: { value, onChange, ...field } }) => (
+                        <Autocomplete
+                          disablePortal
+                          id="combo-box-demo"
+                          options={supports.map((s) => ({
+                            label: s.name,
+                            value: s.idUser,
+                          }))}
+                          defaultValue={
+                            t.IdEmployee
+                              ? {
+                                  label: t.IdEmployeeNavigation?.Name || "",
+                                  value: t.IdEmployee,
+                                }
+                              : undefined
+                          }
+                          onChange={(_, value) => onChange(value?.value ?? 0)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              {...field}
+                              required
+                              label="Agente"
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </div>
+                  <div>
+                    <Button
+                      className={styles["btn-sendInfo"]}
+                      variant="contained"
+                      type="submit"
+                      disabled={assigningTicket}
+                    >
+                      {assigningTicket ? (
+                        <CircularProgress />
+                      ) : (
+                        "Asignar Ticket"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            </>
+          ) : (
+            <>
+              <h5>Agente asignado</h5>
+              <p>{t.IdEmployeeNavigation?.Name ?? "Sin asingar"}</p>
+            </>
+          )}
         </div>
+        {/* Se agregó botón para asignar el ticket  */}
 
         <div className="pb-3">
           <h5>Estado del ticket</h5>
@@ -232,14 +319,6 @@ export default function CreateTicketModal(props: TicketReportModalProps) {
   );
 }
 
-const people = [
-  { label: "John Doe" },
-  { label: "Jane Smith" },
-  { label: "Alice Johnson" },
-  { label: "Bob Brown" },
-  { label: "Carol White" },
-  { label: "David Black" },
-  { label: "Eva Green" },
-  { label: "Frank Clark" },
-  { label: "Grace Lewis" },
-];
+type TAssignTicketFormFields = {
+  employeeId: number;
+};

@@ -160,6 +160,7 @@ export default function AdminNavbar() {
                 key={item.text}
                 disablePadding
                 sx={{ display: "block" }}
+                title={item.text}
               >
                 <ListItemButton
                   sx={{
