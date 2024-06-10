@@ -39,7 +39,7 @@ export default function TicketsResume() {
     <>
       <div>
         <div className="d-flex justify-content-between">
-          <h1>Tickets</h1>
+          <h1>Mis tickets</h1>
           <IconButton
             aria-label="delete"
             size="large"

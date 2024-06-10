@@ -493,65 +493,69 @@ function TicketReport(props: TicketReportProps) {
             </Card>
           )}
         </div>
-        <div>
-          <h5>Tareas</h5>
-          <Card body className="text-center">
-            <form onSubmit={handleTastkSubmit(handleAssignTaskSubmit)}>
-              <div className="py-2">
-                <Controller
-                  control={taskControl}
-                  name="description"
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      required
-                      id="outlined-multiline-flexible"
-                      label="Descripción de la tarea"
-                      multiline
-                      rows={2}
-                    />
-                  )}
-                />
-              </div>
-              <div className="py-2">
-                <Controller
-                  control={taskControl}
-                  name="employeeId"
-                  render={({ field: { onChange, ...field } }) => (
-                    <Autocomplete
-                      disablePortal
-                      id="combo-box-demo"
-                      options={supports
-                        .filter((s) => s.idUser != user?.idUser)
-                        .map((s) => ({
-                          label: s.name,
-                          value: s.idUser,
-                        }))}
-                      onChange={(_, value) => onChange(value?.value ?? 0)}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          {...field}
-                          required
-                          label="Agente"
-                        />
-                      )}
-                    />
-                  )}
-                />
-              </div>
-              <Button
-                className={styles["btn-sendInfo"]}
-                variant="contained"
-                type="submit"
-                disabled={assigningTask}
-              >
-                {assigningTask ? <CircularProgress /> : "Asignar Tarea"}
-              </Button>
-            </form>
-          </Card>
-        </div>
+
+        {(user?.userCategoryName == "Administrator" ||
+          user?.idUser == t.IdEmployee) && (
+          <div>
+            <h5>Tareas</h5>
+            <Card body className="text-center">
+              <form onSubmit={handleTastkSubmit(handleAssignTaskSubmit)}>
+                <div className="py-2">
+                  <Controller
+                    control={taskControl}
+                    name="description"
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        required
+                        id="outlined-multiline-flexible"
+                        label="Descripción de la tarea"
+                        multiline
+                        rows={2}
+                      />
+                    )}
+                  />
+                </div>
+                <div className="py-2">
+                  <Controller
+                    control={taskControl}
+                    name="employeeId"
+                    render={({ field: { onChange, ...field } }) => (
+                      <Autocomplete
+                        disablePortal
+                        id="combo-box-demo"
+                        options={supports
+                          .filter((s) => s.idUser != user?.idUser)
+                          .map((s) => ({
+                            label: s.name,
+                            value: s.idUser,
+                          }))}
+                        onChange={(_, value) => onChange(value?.value ?? 0)}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            {...field}
+                            required
+                            label="Agente"
+                          />
+                        )}
+                      />
+                    )}
+                  />
+                </div>
+                <Button
+                  className={styles["btn-sendInfo"]}
+                  variant="contained"
+                  type="submit"
+                  disabled={assigningTask}
+                >
+                  {assigningTask ? <CircularProgress /> : "Asignar Tarea"}
+                </Button>
+              </form>
+            </Card>
+          </div>
+        )}
 
         <div className="py-5">
           <h5>Historial Tareas</h5>
@@ -604,19 +608,21 @@ function TicketReport(props: TicketReportProps) {
                       {tat?.Finished ? "Finalizado" : "Abierto"}
                     </small>
                   </Col>
-                  {!tat?.Finished && (
-                    <Col md={3}>
-                      <IconButton
-                        aria-label="finish"
-                        color="error"
-                        onClick={() =>
-                          handleFinishTask(tat!.IdTicketAdditionalTask)
-                        }
-                      >
-                        <EventAvailableRoundedIcon />
-                      </IconButton>
-                    </Col>
-                  )}
+                  {!tat?.Finished &&
+                    (user?.userCategoryName == "Administrator" ||
+                      tat?.IdEmployeeNavigation.Name == user?.name) && (
+                      <Col md={3}>
+                        <IconButton
+                          aria-label="finish"
+                          color="error"
+                          onClick={() =>
+                            handleFinishTask(tat!.IdTicketAdditionalTask)
+                          }
+                        >
+                          <EventAvailableRoundedIcon />
+                        </IconButton>
+                      </Col>
+                    )}
                 </Row>
               </div>
             ))}

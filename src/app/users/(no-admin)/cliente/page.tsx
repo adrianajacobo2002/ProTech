@@ -24,15 +24,13 @@ import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRigh
 import useUser from "@/hooks/useUser";
 import useStats from "@/hooks/useStats";
 import useTickets from "@/hooks/useTickets";
+import { TTicketValue } from "@/utils/types";
 
 export default function DashboardCliente() {
-  const [modalShow, setModalShow] = useState(false);
   const { user } = useUser();
   const { stats, statsLoading } = useStats(user?.idUser ?? 0);
-  const { tickets } = useTickets(user!.idUser);
-
-  const handleShowModal = () => setModalShow(true);
-  const handleHideModal = () => setModalShow(false);
+  const { tickets } = useTickets(user?.idUser ?? 0);
+  const [selectedTicket, setSelectedTicket] = useState<TTicketValue>();
 
   return (
     <div>
@@ -184,21 +182,21 @@ export default function DashboardCliente() {
 
                 <TableBody>
                   {tickets
-                    ?.filter((t) => t.state == "EN PROGRESO")
+                    ?.filter((t) => t.State == "EN PROGRESO")
                     .map((t) => (
                       <TableRow>
                         <TableCell component="th" scope="row" align="center">
-                          {t.idTicket}
+                          {t?.IdTicket}
                         </TableCell>
-                        <TableCell align="center">{t.name}</TableCell>
+                        <TableCell align="center">{t.Name}</TableCell>
                         <TableCell align="center">
-                          {t.creationDate.getDate()}
+                          {new Date(t?.CreationDate).getDate()}
                         </TableCell>
                         <TableCell align="center">
-                          {t.idEmployee ?? "Sin asignar"}
+                          {t?.IdEmployee ?? "Sin asignar"}
                         </TableCell>
-                        <TableCell align="center">{t.state}</TableCell>
-                        <TableCell align="center">{t.priority}</TableCell>
+                        <TableCell align="center">{t?.State}</TableCell>
+                        <TableCell align="center">{t?.Priority}</TableCell>
                         <TableCell
                           align="center"
                           className="justify-content-center align-items-center align-content-center"
@@ -206,14 +204,10 @@ export default function DashboardCliente() {
                           <IconButton
                             aria-label="View Detail"
                             size="large"
-                            onClick={handleShowModal}
+                            onClick={() => setSelectedTicket(t)}
                           >
                             <KeyboardArrowRightRoundedIcon fontSize="inherit" />
                           </IconButton>
-                          <CreateTicketModal
-                            show={modalShow}
-                            onHide={handleHideModal}
-                          />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -223,6 +217,13 @@ export default function DashboardCliente() {
           </Paper>
         </Col>
       </Row>
+      {selectedTicket != undefined && (
+        <CreateTicketModal
+          show={true}
+          onHide={() => setSelectedTicket(undefined)}
+          ticket={selectedTicket}
+        />
+      )}
     </div>
   );
 }

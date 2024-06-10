@@ -59,8 +59,8 @@ function CreateTicket(props: CreateTicketProps) {
       return;
     }
 
-    await refetchStats();
     props.onHide();
+    refetchStats();
     toast("Ticket creado con éxito", {
       type: "success",
     });
