@@ -89,9 +89,9 @@ export default function TicketsResume() {
                     <TableCell align="center">
                       {t.IdEmployeeNavigation?.Name ?? "No asignado"}
                     </TableCell>
-                    <TableCell align="center">Base de datos</TableCell>
+                    <TableCell align="center">{t.Category}</TableCell>
                     <TableCell align="center">
-                      <p className={style["word"]}>Abierto</p>
+                      <p className={style["word"]}>{t.State}</p>
                     </TableCell>
                     <TableCell
                       align="center"

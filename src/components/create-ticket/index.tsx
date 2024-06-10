@@ -37,6 +37,7 @@ function CreateTicket(props: CreateTicketProps) {
       Description: "",
       Priority: "BAJA",
       Files: undefined,
+      Category: "",
     },
   });
 
@@ -46,6 +47,7 @@ function CreateTicket(props: CreateTicketProps) {
     fd.append("Name", data.Name);
     fd.append("Description", data.Description);
     fd.append("Priority", data.Priority);
+    fd.append("Category", data.Category);
     if (data.Files != null)
       for (const f of Object.values(data.Files)) fd.append("Files", f);
 
@@ -106,6 +108,23 @@ function CreateTicket(props: CreateTicketProps) {
                   label="Descripción"
                   multiline
                   rows={4}
+                />
+              )}
+            />
+          </div>
+
+          <div className="pb-4">
+            <Controller
+              control={control}
+              name="Category"
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  required
+                  fullWidth
+                  id="outlined-basic"
+                  label="Categoría del ticket"
+                  variant="outlined"
                 />
               )}
             />
@@ -226,6 +245,7 @@ type TFormFields = {
   Description: string;
   Priority: PRIORITIES;
   Files: FileList;
+  Category: string;
 };
 
 type PRIORITIES = "BAJA" | "IMPORTANTE" | "CRITICO";

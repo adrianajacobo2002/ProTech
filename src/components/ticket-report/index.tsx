@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import { Col, Row } from "react-bootstrap";
 import Image from "next/image";
@@ -16,8 +15,20 @@ import FolderIcon from "@mui/icons-material/Folder";
 import Card from "react-bootstrap/Card";
 import Autocomplete from "@mui/material/Autocomplete";
 import useUser from "@/hooks/useUser";
-import { TTicketValue } from "@/utils/types";
-import { Box, Button, CircularProgress } from "@mui/material";
+import {
+  TTicketAdditionalTask,
+  TTicketStates,
+  TTicketValue,
+} from "@/utils/types";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
 import { API_URL } from "@/utils/consts";
 import { toast } from "react-toastify";
 import useSupports from "@/hooks/useSupports";
@@ -25,10 +36,11 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { asignTicket } from "@/services/tickets.service";
 import useTickets from "@/hooks/useTickets";
 import useAssignedTickets from "@/hooks/useAssignedTickets";
-
-import styles from "./styles.module.scss";
 import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded";
 import IconButton from "@mui/material/IconButton";
+import { useEffect, useState } from "react";
+
+import styles from "./styles.module.scss";
 
 interface TicketReportProps {
   ticket: TTicketValue;
@@ -42,10 +54,19 @@ const Demo = styled("div")(({ theme }) => ({
 
 function TicketReport(props: TicketReportProps) {
   const { ticket: t } = props;
+  const [additionalTasks, setAdditionalTasks] = useState<
+    TTicketAdditionalTask[]
+  >([]);
   const { user } = useUser();
   const { supports } = useSupports();
-  const { refetchTickets } = useTickets(user?.idUser ?? 0);
+  const { refetchTickets } = useTickets(
+    user?.userCategoryName == "Administrator" ? undefined : user?.idUser
+  );
   const { reloadAssignedTickets } = useAssignedTickets(user?.idUser ?? 0);
+
+  useEffect(() => {
+    setAdditionalTasks(t?.TicketAdditionalTasks?.$values ?? []);
+  }, [t]);
 
   //#region AssignTicketForm
   const {
@@ -157,6 +178,19 @@ function TicketReport(props: TicketReportProps) {
 
       if (!fetchRes.ok) throw new Error();
 
+      const newTask = (await fetchRes.json()) as TTicketAdditionalTask;
+      setAdditionalTasks((val) => [
+        ...val,
+        {
+          IdTicketAdditionalTask: newTask!.IdTicketAdditionalTask,
+          Description: description,
+          Finished: false,
+          IdEmployeeNavigation: {
+            Name: newTask!.IdEmployeeNavigation.Name,
+          },
+        },
+      ]);
+
       toast("Tarea asignada con éxito", {
         type: "success",
       });
@@ -167,6 +201,59 @@ function TicketReport(props: TicketReportProps) {
     }
   };
   //#endregion
+
+  const handleStateChange = async (newState: TTicketStates) => {
+    try {
+      const fetchRes = await fetch(
+        `${API_URL}/Ticket/ChangeState?ticketId=${t.IdTicket}&state=${newState}`,
+        {
+          method: "PUT",
+        }
+      );
+
+      if (!fetchRes.ok) throw new Error();
+
+      t.State = newState;
+      if (user?.userCategoryName == "Support") reloadAssignedTickets();
+      else refetchTickets();
+      toast("Estado cambiado exitosamente", {
+        type: "success",
+      });
+    } catch (error: any) {
+      toast("Error al cambiar el estado del ticket", {
+        type: "error",
+      });
+    }
+  };
+
+  const handleFinishTask = async (taskId: number) => {
+    try {
+      const fetchRes = await fetch(
+        `${API_URL}/Task/ChangeState?taskId=${taskId}&state=${true}`,
+        {
+          method: "PUT",
+        }
+      );
+
+      if (!fetchRes.ok) throw new Error();
+
+      setAdditionalTasks((val) => {
+        const _ = JSON.parse(JSON.stringify(val)) as TTicketAdditionalTask[];
+        const i = _.findIndex((tat) => tat?.IdTicketAdditionalTask == taskId);
+        _[i]!.Finished = true;
+        return _;
+      });
+
+      await reloadAssignedTickets();
+      toast("Tarea finalizada con éxito", {
+        type: "success",
+      });
+    } catch (error: any) {
+      toast("No se pudo finalizar la tarea", {
+        type: "error",
+      });
+    }
+  };
 
   if (!t) return;
   return (
@@ -329,10 +416,29 @@ function TicketReport(props: TicketReportProps) {
           )}
         </div>
         {/* Se agregó botón para asignar el ticket  */}
-
         <div className="pb-3">
           <h5>Estado del ticket</h5>
-          <p>{t.State}</p>
+          {user?.userCategoryName == "User" || t.State == "RESUELTO" ? (
+            <p>{t.State}</p>
+          ) : (
+            <FormControl fullWidth sx={{ mt: 3 }}>
+              <InputLabel id="ticket-state-id">Estado del ticket</InputLabel>
+              <Select
+                labelId="ticket-state-id"
+                label="Estado del ticket"
+                defaultValue={t.State}
+                onChange={(e) =>
+                  handleStateChange(e.target.value as TTicketStates)
+                }
+              >
+                {t.State == "EN PROGRESO" && (
+                  <MenuItem value="EN PROGRESO">EN PROGRESO</MenuItem>
+                )}
+                <MenuItem value="EN ESPERA">EN ESPERA</MenuItem>
+                <MenuItem value="RESUELTO">RESUELTO</MenuItem>
+              </Select>
+            </FormControl>
+          )}
         </div>
 
         <div className="py-4">
@@ -450,28 +556,70 @@ function TicketReport(props: TicketReportProps) {
         <div className="py-5">
           <h5>Historial Tareas</h5>
           <Card body>
-            <div className="py-2 text-center">
-              <Row>
-                <Col md={3}>
-                  <small>
-                    <s>Reiniciar el modem</s>
-                  </small>
-                </Col>
-                <Col md={3}>
-                  <small>
-                    <s>Jose P.</s>
-                  </small>
-                </Col>
-                <Col md={3}>
-                  <small className={styles["word"]}>Abierto</small>
-                </Col>
-                <Col md={3}>
-                  <IconButton aria-label="finish" color="error">
-                    <EventAvailableRoundedIcon />
-                  </IconButton>
-                </Col>
-              </Row>
-            </div>
+            {additionalTasks.map((tat) => (
+              <div className="py-2 text-center">
+                <Row>
+                  <Col
+                    md={3}
+                    style={{
+                      fontSize: 10,
+                      textDecoration: tat?.Finished
+                        ? "line-through"
+                        : undefined,
+                    }}
+                  >
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="100%"
+                      fontSize={10}
+                      sx={{
+                        textDecoration: tat?.Finished
+                          ? "line-through"
+                          : undefined,
+                      }}
+                    >
+                      {tat?.Description}
+                    </Box>
+                  </Col>
+                  <Col md={3}>
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="100%"
+                      fontSize={10}
+                      sx={{
+                        textDecoration: tat?.Finished
+                          ? "line-through"
+                          : undefined,
+                      }}
+                    >
+                      {tat?.IdEmployeeNavigation.Name}
+                    </Box>
+                  </Col>
+                  <Col md={3}>
+                    <small className={styles["word"]}>
+                      {tat?.Finished ? "Finalizado" : "Abierto"}
+                    </small>
+                  </Col>
+                  {!tat?.Finished && (
+                    <Col md={3}>
+                      <IconButton
+                        aria-label="finish"
+                        color="error"
+                        onClick={() =>
+                          handleFinishTask(tat!.IdTicketAdditionalTask)
+                        }
+                      >
+                        <EventAvailableRoundedIcon />
+                      </IconButton>
+                    </Col>
+                  )}
+                </Row>
+              </div>
+            ))}
           </Card>
         </div>
       </Modal.Body>

@@ -15,7 +15,7 @@ import style from "./style.module.scss";
 import TicketsFilter from "@/components/tickets-filter";
 import CreateTicketModal from "@/components/ticket-report";
 import useUser from "@/hooks/useUser";
-import { TTicketValue } from "@/utils/types";
+import { TFilter, TTicketValue } from "@/utils/types";
 import useAssignedTickets from "@/hooks/useAssignedTickets";
 
 export default function TicketsAsignados() {
@@ -27,6 +27,7 @@ export default function TicketsAsignados() {
   const [selectedTicket, setSelectedTicket] = useState<
     TTicketValue | undefined
   >();
+  const [filter, setFilter] = useState<TFilter>();
 
   const handleShowOffcanvas = () => setShowOffcanvas(true);
   const handleCloseOffcanvas = () => setShowOffcanvas(false);
@@ -35,6 +36,21 @@ export default function TicketsAsignados() {
 
   const handleShowModal = () => setModalShow(true);
   const handleHideModal = () => setModalShow(false);
+
+  const withFilter = () => {
+    if (filter == undefined) return assignedTickets;
+
+    const { agenteId, from, state, to } = filter;
+    return assignedTickets
+      .filter((at) => (state ? at.State == state : true))
+      .filter((at) => (agenteId ? at.IdEmployee == agenteId : true))
+      .filter((at) => {
+        const creationDate = new Date(at.CreationDate);
+        const isAfter = from != null ? creationDate >= from : true;
+        const isBefore = to != null ? creationDate <= to : true;
+        return isAfter && isBefore;
+      });
+  };
 
   if (assignedTicketsLoading) return;
   return (
@@ -55,6 +71,7 @@ export default function TicketsAsignados() {
             show={showOffcanvas}
             handleClose={handleCloseOffcanvas}
             placement="end"
+            onFilter={setFilter}
           />
         </div>
         <hr />
@@ -77,7 +94,7 @@ export default function TicketsAsignados() {
                 </TableRow>
               </TableHead>
 
-              {assignedTickets.map((t, i) => (
+              {withFilter().map((t, i) => (
                 <TableBody key={i}>
                   <TableRow>
                     <TableCell component="th" scope="row" align="center">
@@ -89,7 +106,7 @@ export default function TicketsAsignados() {
                     </TableCell>
                     <TableCell align="center">Base de datos</TableCell>
                     <TableCell align="center">
-                      <p className={style["word"]}>Abierto</p>
+                      <p className={style["word"]}>{t.State}</p>
                     </TableCell>
                     <TableCell
                       align="center"

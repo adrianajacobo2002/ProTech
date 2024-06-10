@@ -18,6 +18,7 @@ import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import LocalActivityRoundedIcon from "@mui/icons-material/LocalActivityRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import AssignmentRoundedIcon from "@mui/icons-material/AssignmentRounded";
 import useUser from "@/hooks/useUser";
 
 import { logout } from "@/services/user.service";
@@ -123,14 +124,16 @@ export default function AdminNavbar() {
       onClick: handleMyTicketssClick,
     },
     {
-      text: "Tickets",
+      text: "Tickets asignados",
       icon: <ConfirmationNumberRoundedIcon />,
       show: user?.userCategoryName != "User",
+      onClick: () => router.push("/users/tickets-asignados"),
     },
     {
-      text: "Tareas",
-      icon: <FormatListBulletedRoundedIcon />,
-      show: user?.userCategoryName == "Support",
+      text: "Todos los tickets",
+      icon: <AssignmentRoundedIcon />,
+      show: user?.userCategoryName == "Administrator",
+      onClick: () => router.push("/users/tickets"),
     },
     {
       text: "Usuarios",

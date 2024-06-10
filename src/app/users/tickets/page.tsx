@@ -15,18 +15,36 @@ import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRigh
 import style from "./style.module.scss";
 import TicketsFilter from "@/components/tickets-filter";
 import CreateTicketModal from "@/components/ticket-report";
-
+import { TFilter, TTicketValue } from "@/utils/types";
+import useTickets from "@/hooks/useTickets";
 
 export default function TicketsResume() {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<
+    TTicketValue | undefined
+  >();
+  const { tickets } = useTickets();
+  const [filter, setFilter] = useState<TFilter>();
 
   const handleShowOffcanvas = () => setShowOffcanvas(true);
   const handleCloseOffcanvas = () => setShowOffcanvas(false);
 
-  const [modalShow, setModalShow] = React.useState(false);
+  const withFilter = () => {
+    if (filter == undefined || tickets == undefined) return tickets;
 
-  const handleShowModal = () => setModalShow(true);
-  const handleHideModal = () => setModalShow(false);
+    const { agenteId, from, state, to, category } = filter;
+    return tickets
+      .filter((at) => (state ? at.State == state : true))
+      .filter((at) => (agenteId ? at.IdEmployee == agenteId : true))
+      .filter((at) => (category ? at.Category?.includes(category) : true))
+      .filter((at) => {
+        const creationDate = new Date(at.CreationDate);
+        const isAfter = from != null ? creationDate >= from : true;
+        const isBefore = to != null ? creationDate <= to : true;
+        return isAfter && isBefore;
+      });
+  };
+
   return (
     <>
       <div>
@@ -45,6 +63,7 @@ export default function TicketsResume() {
             show={showOffcanvas}
             handleClose={handleCloseOffcanvas}
             placement="end"
+            onFilter={setFilter}
           />
         </div>
         <hr />
@@ -69,31 +88,49 @@ export default function TicketsResume() {
               </TableHead>
 
               <TableBody>
-                <TableRow>
-                  <TableCell component="th" scope="row" align="center">
-                    12345678
-                  </TableCell>
-                  <TableCell align="center">Jose P.</TableCell>
-                  <TableCell align="center">Ahora</TableCell>
-                  <TableCell align="center">Agente 1</TableCell>
-                  <TableCell align="center">Base de datos</TableCell>
-                  <TableCell align="center">
-                    <p className={style["word"]}>Abierto</p>
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    className="justify-content-center align-items-center align-content-center"
-                  >
-                    <IconButton aria-label="View Detail" size="large"  onClick={handleShowModal}>
-                      <KeyboardArrowRightRoundedIcon fontSize="inherit" />
-                    </IconButton>
-                    <CreateTicketModal show={modalShow} onHide={handleHideModal} />
-                  </TableCell>
-                </TableRow>
+                {withFilter()?.map((t) => (
+                  <TableRow>
+                    <TableCell component="th" scope="row" align="center">
+                      {t.IdTicket}
+                    </TableCell>
+                    <TableCell align="center">
+                      {t.IdUserNavigation?.Name}
+                    </TableCell>
+                    <TableCell align="center">
+                      {new Date(t.CreationDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell align="center">
+                      {t.IdEmployeeNavigation?.Name ?? "No asignado"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {t.Category ?? "Sin área"}
+                    </TableCell>
+                    <TableCell align="center">
+                      <p className={style["word"]}>{t.State}</p>
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      className="justify-content-center align-items-center align-content-center"
+                    >
+                      <IconButton
+                        aria-label="View Detail"
+                        size="large"
+                        onClick={() => setSelectedTicket(t)}
+                      >
+                        <KeyboardArrowRightRoundedIcon fontSize="inherit" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
         </Paper>
+        <CreateTicketModal
+          show={selectedTicket != undefined}
+          onHide={() => setSelectedTicket(undefined)}
+          ticket={selectedTicket!}
+        />
       </div>
     </>
   );

@@ -46,6 +46,7 @@ export type TTicketValue = {
   Priority: TTicketPriorities;
   State: TTicketStates;
   CreationDate: string;
+  Category: string | null;
   IdEmployeeNavigation?: {
     Name: string;
   };
@@ -100,3 +101,11 @@ export type TTicketAdditionalTask = {
     Name: string;
   };
 } | null;
+
+export type TFilter = {
+  state: TTicketStates | "";
+  agenteId: number;
+  category: string;
+  from: Date | null;
+  to: Date | null;
+};
