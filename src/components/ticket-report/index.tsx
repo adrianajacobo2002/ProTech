@@ -27,6 +27,8 @@ import useTickets from "@/hooks/useTickets";
 import useAssignedTickets from "@/hooks/useAssignedTickets";
 
 import styles from "./styles.module.scss";
+import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded";
+import IconButton from "@mui/material/IconButton";
 
 interface TicketReportProps {
   ticket: TTicketValue;
@@ -258,6 +260,7 @@ function TicketReport(props: TicketReportProps) {
           </Grid>
         </div>
 
+        {/* Se agregó botón para asignar el ticket  */}
         <div className="pb-5">
           {user?.userCategoryName == "Administrator" ? (
             <>
@@ -449,18 +452,23 @@ function TicketReport(props: TicketReportProps) {
           <Card body>
             <div className="py-2 text-center">
               <Row>
-                <Col md={4}>
+                <Col md={3}>
                   <small>
                     <s>Reiniciar el modem</s>
                   </small>
                 </Col>
-                <Col md={4}>
+                <Col md={3}>
                   <small>
                     <s>Jose P.</s>
                   </small>
                 </Col>
-                <Col md={4}>
+                <Col md={3}>
                   <small className={styles["word"]}>Abierto</small>
+                </Col>
+                <Col md={3}>
+                  <IconButton aria-label="finish" color="error">
+                    <EventAvailableRoundedIcon />
+                  </IconButton>
                 </Col>
               </Row>
             </div>
