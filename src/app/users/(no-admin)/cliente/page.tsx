@@ -190,10 +190,10 @@ export default function DashboardCliente() {
                         </TableCell>
                         <TableCell align="center">{t.Name}</TableCell>
                         <TableCell align="center">
-                          {new Date(t?.CreationDate).getDate()}
+                          {new Date(t?.CreationDate).toLocaleDateString()}
                         </TableCell>
                         <TableCell align="center">
-                          {t?.IdEmployee ?? "Sin asignar"}
+                          {t?.IdEmployeeNavigation?.Name ?? "Sin asignar"}
                         </TableCell>
                         <TableCell align="center">{t?.State}</TableCell>
                         <TableCell align="center">{t?.Priority}</TableCell>

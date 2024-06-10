@@ -431,10 +431,10 @@ function TicketReport(props: TicketReportProps) {
                   handleStateChange(e.target.value as TTicketStates)
                 }
               >
-                {t.State == "EN PROGRESO" && (
-                  <MenuItem value="EN PROGRESO">EN PROGRESO</MenuItem>
+                {t.State == "EN ESPERA" && (
+                  <MenuItem value="EN ESPERA">EN ESPERA</MenuItem>
                 )}
-                <MenuItem value="EN ESPERA">EN ESPERA</MenuItem>
+                <MenuItem value="EN PROGRESO">EN PROGRESO</MenuItem>
                 <MenuItem value="RESUELTO">RESUELTO</MenuItem>
               </Select>
             </FormControl>
