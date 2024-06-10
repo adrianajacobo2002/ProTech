@@ -48,7 +48,7 @@ function ClientSignUp(props: ClientSignUpProps) {
 
   const handleFormSubmit: SubmitHandler<TFormFields> = async (data) => {
     try {
-      await fetch(`${API_URL}/User/CreateClient`, {
+      const fetchRes = await fetch(`${API_URL}/User/CreateClient`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -56,12 +56,20 @@ function ClientSignUp(props: ClientSignUpProps) {
         body: JSON.stringify(data),
       });
 
+      if (!fetchRes.ok) {
+        toast("El correo ya está registrado.", {
+          type: "error",
+        });
+        return;
+      }
+
       props.onHide();
       refetchUsers();
       toast("Cliente creado con éxito", {
         type: "success",
       });
     } catch (error: any) {
+      console.log(error);
       toast("Error al crear el cliente", {
         type: "error",
       });

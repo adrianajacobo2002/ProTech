@@ -48,7 +48,7 @@ function EmployeeSignUp(props: EmployeeSignUpProps) {
 
   const handleFormSubmit: SubmitHandler<TFormFields> = async (data) => {
     try {
-      await fetch(`${API_URL}/User/CreateSupport`, {
+      const fetchRes = await fetch(`${API_URL}/User/CreateSupport`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -56,13 +56,20 @@ function EmployeeSignUp(props: EmployeeSignUpProps) {
         body: JSON.stringify(data),
       });
 
+      if (!fetchRes.ok) {
+        toast("El correo ya está registrado.", {
+          type: "error",
+        });
+        return;
+      }
+
       props.onHide();
       refetchUsers();
       toast("Soporte creado con éxito", {
         type: "success",
       });
     } catch (error: any) {
-      toast("Error al crear el soporte", {
+      toast(error.message, {
         type: "error",
       });
     }
