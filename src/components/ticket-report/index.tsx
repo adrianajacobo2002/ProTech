@@ -24,6 +24,8 @@ import Typography from "@mui/material/Typography";
 import FolderIcon from "@mui/icons-material/Folder";
 import Card from "react-bootstrap/Card";
 import Autocomplete from "@mui/material/Autocomplete";
+import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded";
+import IconButton from "@mui/material/IconButton";
 
 interface TicketReportProps {
   show: boolean;
@@ -62,7 +64,9 @@ function TicketReport(props: TicketReportProps) {
         <div className="text-center">
           <Image src={logoLetra} alt="Logo ProTech" width={300} height={150} />
         </div>
-        <h5 className="pb-4"><b>Información General</b></h5>
+        <h5 className="pb-4">
+          <b>Información General</b>
+        </h5>
         <div className="pb-3">
           <p>
             <b>Nombre de Aplicación o Servicio</b>
@@ -146,7 +150,6 @@ function TicketReport(props: TicketReportProps) {
             </Demo>
           </Grid>
         </div>
-
 
         {/* Se agregó botón para asignar el ticket  */}
         <div className="pb-5">
@@ -283,18 +286,23 @@ function TicketReport(props: TicketReportProps) {
           <Card body>
             <div className="py-2 text-center">
               <Row>
-                <Col md={4}>
+                <Col md={3}>
                   <small>
                     <s>Reiniciar el modem</s>
                   </small>
                 </Col>
-                <Col md={4}>
+                <Col md={3}>
                   <small>
                     <s>Jose P.</s>
                   </small>
                 </Col>
-                <Col md={4}>
+                <Col md={3}>
                   <small className={style["word"]}>Abierto</small>
+                </Col>
+                <Col md={3}>
+                  <IconButton aria-label="finish" color="error">
+                    <EventAvailableRoundedIcon />
+                  </IconButton>
                 </Col>
               </Row>
             </div>
