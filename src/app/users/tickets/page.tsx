@@ -78,12 +78,13 @@ export default function TicketsResume() {
               <TableHead>
                 <TableRow>
                   <TableCell align="center">ID Ticket</TableCell>
+                  <TableCell align="center">Nombre</TableCell>
                   <TableCell align="center">Solicitante</TableCell>
                   <TableCell align="center">Fecha</TableCell>
                   <TableCell align="center">Agente</TableCell>
                   <TableCell align="center">Área</TableCell>
                   <TableCell align="center">Estado</TableCell>
-                  <TableCell align="center">Estado</TableCell>
+                  <TableCell align="center"></TableCell>
                 </TableRow>
               </TableHead>
 
@@ -92,6 +93,9 @@ export default function TicketsResume() {
                   <TableRow>
                     <TableCell component="th" scope="row" align="center">
                       {t.IdTicket}
+                    </TableCell>
+                    <TableCell component="th" scope="row" align="center">
+                      {t.Name}
                     </TableCell>
                     <TableCell align="center">
                       {t.IdUserNavigation?.Name}
