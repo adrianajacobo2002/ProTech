@@ -122,6 +122,50 @@ function TicketReport(props: TicketReportProps) {
   };
   //#endregion
 
+  //#region TaskForm
+  const {
+    control: taskControl,
+    handleSubmit: handleTastkSubmit,
+    formState: { isSubmitting: assigningTask },
+  } = useForm<TTaskFormFields>({
+    defaultValues: {
+      description: "",
+      employeeId: 0,
+    },
+  });
+
+  const handleAssignTaskSubmit: SubmitHandler<TTaskFormFields> = async (
+    data
+  ) => {
+    try {
+      const { description, employeeId } = data;
+      const fetchRes = await fetch(
+        `${API_URL}/Task/CreateTask?employeeId=${employeeId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            idTicket: t.IdTicket,
+            description,
+          }),
+        }
+      );
+
+      if (!fetchRes.ok) throw new Error();
+
+      toast("Tarea asignada con éxito", {
+        type: "success",
+      });
+    } catch (error: any) {
+      toast("No se pudo asignar la tareas", {
+        type: "error",
+      });
+    }
+  };
+  //#endregion
+
   if (!t) return;
   return (
     <Modal
@@ -228,7 +272,7 @@ function TicketReport(props: TicketReportProps) {
                     <Controller
                       control={assignTicketControl}
                       name="employeeId"
-                      render={({ field: { value, onChange, ...field } }) => (
+                      render={({ field: { onChange, ...field } }) => (
                         <Autocomplete
                           disablePortal
                           id="combo-box-demo"
@@ -314,6 +358,7 @@ function TicketReport(props: TicketReportProps) {
                         <TextField
                           {...field}
                           fullWidth
+                          required
                           id="outlined-multiline-flexible"
                           label="Comentario"
                           multiline
@@ -325,7 +370,12 @@ function TicketReport(props: TicketReportProps) {
                 </Row>
                 <Row>
                   <Col>
-                    <Button variant="contained" type="submit" sx={{ mt: 3 }}>
+                    <Button
+                      variant="contained"
+                      type="submit"
+                      className={styles["btn-sendInfo"]}
+                      sx={{ mt: 3 }}
+                    >
                       {commenting ? <CircularProgress /> : "Agregar comentario"}
                     </Button>
                   </Col>
@@ -337,35 +387,60 @@ function TicketReport(props: TicketReportProps) {
         <div>
           <h5>Tareas</h5>
           <Card body className="text-center">
-            <div className="py-2">
-              <TextField
-                fullWidth
-                id="outlined-multiline-flexible"
-                label="Descripción de la tarea"
-                multiline
-                rows={2}
-              />
-            </div>
-            <div className="py-2">
-              <Autocomplete
-                disablePortal
-                id="combo-box-demo"
-                options={supports
-                  .filter((s) => s.idUser != user?.idUser)
-                  .map((s) => ({
-                    label: s.name,
-                    value: s.idUser,
-                  }))}
-                renderInput={(params) => (
-                  <TextField {...params} label="Agente" />
-                )}
-              />
-            </div>
-            <div>
-              <Button className={styles["btn-sendInfo"]} variant="contained">
-                Asignar Tarea
+            <form onSubmit={handleTastkSubmit(handleAssignTaskSubmit)}>
+              <div className="py-2">
+                <Controller
+                  control={taskControl}
+                  name="description"
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      required
+                      id="outlined-multiline-flexible"
+                      label="Descripción de la tarea"
+                      multiline
+                      rows={2}
+                    />
+                  )}
+                />
+              </div>
+              <div className="py-2">
+                <Controller
+                  control={taskControl}
+                  name="employeeId"
+                  render={({ field: { onChange, ...field } }) => (
+                    <Autocomplete
+                      disablePortal
+                      id="combo-box-demo"
+                      options={supports
+                        .filter((s) => s.idUser != user?.idUser)
+                        .map((s) => ({
+                          label: s.name,
+                          value: s.idUser,
+                        }))}
+                      onChange={(_, value) => onChange(value?.value ?? 0)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          {...field}
+                          required
+                          label="Agente"
+                        />
+                      )}
+                    />
+                  )}
+                />
+              </div>
+              <Button
+                className={styles["btn-sendInfo"]}
+                variant="contained"
+                type="submit"
+                disabled={assigningTask}
+              >
+                {assigningTask ? <CircularProgress /> : "Asignar Tarea"}
               </Button>
-            </div>
+            </form>
           </Card>
         </div>
 
@@ -413,5 +488,10 @@ export default function CreateTicketModal(props: TicketReportModalProps) {
 }
 
 type TAssignTicketFormFields = {
+  employeeId: number;
+};
+
+type TTaskFormFields = {
+  description: string;
   employeeId: number;
 };

@@ -54,11 +54,11 @@ export type TTicketValue = {
     $values: TBackupFiles[];
   };
   TicketAdditionalTasks: {
-    $id: "5";
-    $values: [];
+    $id: string;
+    $values: TTicketAdditionalTask[];
   };
   TicketComments: {
-    $id: "6";
+    $id: string;
     $values: {
       Comment: string;
       Date: string;
@@ -90,4 +90,13 @@ export type TTicketUser = {
   Cellphone: string;
   CompanyName: string;
   JobPosition: string;
+} | null;
+
+export type TTicketAdditionalTask = {
+  IdTicketAdditionalTask: number;
+  Description: string;
+  Finished: boolean;
+  IdEmployeeNavigation: {
+    Name: string;
+  };
 } | null;
