@@ -1,5 +1,6 @@
 "use client";
-import * as React from "react";
+
+import { useState } from "react";
 import WelcomeCard from "@/components/welcome-card";
 import { Col, Row, Card } from "react-bootstrap";
 import ButtonCrear from "@/components/button-create";
@@ -12,7 +13,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import imgpc from "@/assets/images/modern desktop computer-bro.png";
-import img from "@/assets/images/danger.svg";
 import Avatar from "@mui/material/Avatar";
 import ChecklistRoundedIcon from "@mui/icons-material/ChecklistRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
@@ -21,17 +21,11 @@ import HistoryToggleOffRoundedIcon from "@mui/icons-material/HistoryToggleOffRou
 import AddCircleOutlineRoundedIcon from "@mui/icons-material/AddCircleOutlineRounded";
 import IconButton from "@mui/material/IconButton";
 import TasksResumeModal from "@/components/task-resume";
-import CreateTicketModal from "@/components/create-ticket";
-import Modal from "react-bootstrap/Modal";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import style from "./style.module.scss";
 import useStats from "@/hooks/useStats";
 import useUser from "@/hooks/useUser";
 
 export default function Dashboard() {
-  const [modalShow, setModalShow] = React.useState(false);
-  const [ChangePShow, setChangePShow] = React.useState(false);
+  const [modalShow, setModalShow] = useState(false);
   const { user } = useUser();
   const { stats, statsLoading } = useStats(user?.idUser ?? 0);
 
