@@ -9,6 +9,8 @@ export default function useUsers() {
     queryKey: ["users"],
     queryFn: () => fetchUsers,
     placeholderData: keepPreviousData,
+    staleTime: Infinity,
+    refetchOnMount: true,
   });
 
   return {

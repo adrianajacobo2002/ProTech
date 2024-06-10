@@ -10,6 +10,8 @@ import logo from "@/assets/images/logo.svg";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { API_URL } from "@/utils/consts";
 import { toast } from "react-toastify";
+import { CircularProgress } from "@mui/material";
+import useUsers from "@/hooks/useUsers";
 
 interface EmployeeSignUpProps {
   show: boolean;
@@ -27,7 +29,12 @@ type TFormFields = {
 };
 
 function EmployeeSignUp(props: EmployeeSignUpProps) {
-  const { control, handleSubmit } = useForm<TFormFields>({
+  const { refetchUsers } = useUsers();
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<TFormFields>({
     defaultValues: {
       name: "",
       email: "",
@@ -49,6 +56,8 @@ function EmployeeSignUp(props: EmployeeSignUpProps) {
         body: JSON.stringify(data),
       });
 
+      props.onHide();
+      refetchUsers();
       toast("Soporte creado con éxito", {
         type: "success",
       });
@@ -117,7 +126,7 @@ function EmployeeSignUp(props: EmployeeSignUpProps) {
                 <Controller
                   control={control}
                   name="cellphone"
-                  render={({ field }) => (
+                  render={({ field: { onChange, ...field } }) => (
                     <TextField
                       {...field}
                       fullWidth
@@ -126,6 +135,12 @@ function EmployeeSignUp(props: EmployeeSignUpProps) {
                       label="Número Telefónico"
                       variant="outlined"
                       size="small"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (isNaN(+val) || val.length > 8) return;
+
+                        onChange(val);
+                      }}
                     />
                   )}
                 />
@@ -160,8 +175,9 @@ function EmployeeSignUp(props: EmployeeSignUpProps) {
             className={style["btn-sendInfo"]}
             variant="contained"
             type="submit"
+            disabled={isSubmitting}
           >
-            Registrar Empleado
+            {isSubmitting ? <CircularProgress /> : "Registrar Empleado"}
           </Button>
         </form>
       </Modal.Body>

@@ -16,7 +16,7 @@ import TicketsFilter from "@/components/tickets-filter";
 import CreateTicketModal from "@/components/ticket-report";
 import useUser from "@/hooks/useUser";
 import useTickets from "@/hooks/useTickets";
-import { TTicketValue } from "@/utils/types";
+import { TFilter, TTicketValue } from "@/utils/types";
 
 export default function TicketsResume() {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
@@ -25,14 +25,30 @@ export default function TicketsResume() {
   const [selectedTicket, setSelectedTicket] = useState<
     TTicketValue | undefined
   >();
+  const [modalShow, setModalShow] = React.useState(false);
+  const [filter, setFilter] = useState<TFilter>();
 
   const handleShowOffcanvas = () => setShowOffcanvas(true);
   const handleCloseOffcanvas = () => setShowOffcanvas(false);
 
-  const [modalShow, setModalShow] = React.useState(false);
-
   const handleShowModal = () => setModalShow(true);
   const handleHideModal = () => setModalShow(false);
+
+  const withFilter = () => {
+    if (filter == undefined || tickets == undefined) return tickets;
+
+    const { agenteId, from, state, to, category } = filter;
+    return tickets
+      .filter((at) => (state ? at.State == state : true))
+      .filter((at) => (agenteId ? at.IdEmployee == agenteId : true))
+      .filter((at) => (category ? at.Category?.includes(category) : true))
+      .filter((at) => {
+        const creationDate = new Date(at.CreationDate);
+        const isAfter = from != null ? creationDate >= from : true;
+        const isBefore = to != null ? creationDate <= to : true;
+        return isAfter && isBefore;
+      });
+  };
 
   if (ticketsLoading && !tickets) return;
   return (
@@ -53,6 +69,7 @@ export default function TicketsResume() {
             show={showOffcanvas}
             handleClose={handleCloseOffcanvas}
             placement="end"
+            onFilter={setFilter}
           />
         </div>
         <hr />
@@ -76,7 +93,7 @@ export default function TicketsResume() {
                 </TableRow>
               </TableHead>
 
-              {tickets?.map((t, i) => (
+              {withFilter()?.map((t, i) => (
                 <TableBody key={i}>
                   <TableRow>
                     <TableCell component="th" scope="row" align="center">
@@ -89,7 +106,7 @@ export default function TicketsResume() {
                     <TableCell align="center">
                       {t.IdEmployeeNavigation?.Name ?? "No asignado"}
                     </TableCell>
-                    <TableCell align="center">{t.Category}</TableCell>
+                    <TableCell align="center">{t.Category || "-"}</TableCell>
                     <TableCell align="center">
                       <p className={style["word"]}>{t.State}</p>
                     </TableCell>

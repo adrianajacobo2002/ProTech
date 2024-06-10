@@ -345,7 +345,9 @@ function TicketReport(props: TicketReportProps) {
 
         {/* Se agregó botón para asignar el ticket  */}
         <div className="pb-5">
-          {user?.userCategoryName == "Administrator" ? (
+          {t.State != "RESUELTO" &&
+          (user?.userCategoryName == "Administrator" ||
+            t.IdEmployee == user?.idUser) ? (
             <>
               <h5>Asignar Ticket</h5>
               <Card body className="text-center">
@@ -407,16 +409,16 @@ function TicketReport(props: TicketReportProps) {
           ) : (
             <>
               <h5>Agente asignado</h5>
-              <p>{t.IdEmployeeNavigation?.Name ?? "Sin asingar"}</p>
+              <p>{t.IdEmployeeNavigation?.Name ?? "Sin asignar"}</p>
             </>
           )}
         </div>
         {/* Se agregó botón para asignar el ticket  */}
         <div className="pb-3">
           <h5>Estado del ticket</h5>
-          {user?.userCategoryName == "User" || t.State == "RESUELTO" ? (
-            <p>{t.State}</p>
-          ) : (
+          {t.State != "RESUELTO" &&
+          (user?.userCategoryName == "Administrator" ||
+            user?.idUser == t.IdEmployee) ? (
             <FormControl fullWidth sx={{ mt: 3 }}>
               <InputLabel id="ticket-state-id">Estado del ticket</InputLabel>
               <Select
@@ -434,6 +436,8 @@ function TicketReport(props: TicketReportProps) {
                 <MenuItem value="RESUELTO">RESUELTO</MenuItem>
               </Select>
             </FormControl>
+          ) : (
+            <p>{t.State}</p>
           )}
         </div>
 
@@ -451,107 +455,114 @@ function TicketReport(props: TicketReportProps) {
               <hr />
             </div>
           ))}
-          {t.IdEmployee == user?.idUser && (
-            <Card body className="text-center">
-              <form onSubmit={handleCommentSubmit(handleCommentFormSubmit)}>
-                <Row>
-                  <Col>
+          {t.State != "RESUELTO" &&
+            (user?.userCategoryName == "Administrator" ||
+              t.IdEmployee == user?.idUser) && (
+              <Card body className="text-center">
+                <form onSubmit={handleCommentSubmit(handleCommentFormSubmit)}>
+                  <Row>
+                    <Col>
+                      <Controller
+                        control={commentFormControl}
+                        name="comment"
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            required
+                            id="outlined-multiline-flexible"
+                            label="Comentario"
+                            multiline
+                            rows={2}
+                          />
+                        )}
+                      />
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col>
+                      <Button
+                        variant="contained"
+                        type="submit"
+                        className={styles["btn-sendInfo"]}
+                        sx={{ mt: 3 }}
+                      >
+                        {commenting ? (
+                          <CircularProgress />
+                        ) : (
+                          "Agregar comentario"
+                        )}
+                      </Button>
+                    </Col>
+                  </Row>
+                </form>
+              </Card>
+            )}
+        </div>
+
+        {t.State != "RESUELTO" &&
+          (user?.userCategoryName == "Administrator" ||
+            t.IdEmployee == user?.idUser) && (
+            <div>
+              <h5>Tareas</h5>
+              <Card body className="text-center">
+                <form onSubmit={handleTastkSubmit(handleAssignTaskSubmit)}>
+                  <div className="py-2">
                     <Controller
-                      control={commentFormControl}
-                      name="comment"
+                      control={taskControl}
+                      name="description"
                       render={({ field }) => (
                         <TextField
                           {...field}
                           fullWidth
                           required
                           id="outlined-multiline-flexible"
-                          label="Comentario"
+                          label="Descripción de la tarea"
                           multiline
                           rows={2}
                         />
                       )}
                     />
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <Button
-                      variant="contained"
-                      type="submit"
-                      className={styles["btn-sendInfo"]}
-                      sx={{ mt: 3 }}
-                    >
-                      {commenting ? <CircularProgress /> : "Agregar comentario"}
-                    </Button>
-                  </Col>
-                </Row>
-              </form>
-            </Card>
+                  </div>
+                  <div className="py-2">
+                    <Controller
+                      control={taskControl}
+                      name="employeeId"
+                      render={({ field: { onChange, ...field } }) => (
+                        <Autocomplete
+                          disablePortal
+                          id="combo-box-demo"
+                          options={supports
+                            .filter((s) => s.idUser != user?.idUser)
+                            .map((s) => ({
+                              label: s.name,
+                              value: s.idUser,
+                            }))}
+                          onChange={(_, value) => onChange(value?.value ?? 0)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              {...field}
+                              required
+                              label="Agente"
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </div>
+                  <Button
+                    className={styles["btn-sendInfo"]}
+                    variant="contained"
+                    type="submit"
+                    disabled={assigningTask}
+                  >
+                    {assigningTask ? <CircularProgress /> : "Asignar Tarea"}
+                  </Button>
+                </form>
+              </Card>
+            </div>
           )}
-        </div>
-
-        {(user?.userCategoryName == "Administrator" ||
-          user?.idUser == t.IdEmployee) && (
-          <div>
-            <h5>Tareas</h5>
-            <Card body className="text-center">
-              <form onSubmit={handleTastkSubmit(handleAssignTaskSubmit)}>
-                <div className="py-2">
-                  <Controller
-                    control={taskControl}
-                    name="description"
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        fullWidth
-                        required
-                        id="outlined-multiline-flexible"
-                        label="Descripción de la tarea"
-                        multiline
-                        rows={2}
-                      />
-                    )}
-                  />
-                </div>
-                <div className="py-2">
-                  <Controller
-                    control={taskControl}
-                    name="employeeId"
-                    render={({ field: { onChange, ...field } }) => (
-                      <Autocomplete
-                        disablePortal
-                        id="combo-box-demo"
-                        options={supports
-                          .filter((s) => s.idUser != user?.idUser)
-                          .map((s) => ({
-                            label: s.name,
-                            value: s.idUser,
-                          }))}
-                        onChange={(_, value) => onChange(value?.value ?? 0)}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            {...field}
-                            required
-                            label="Agente"
-                          />
-                        )}
-                      />
-                    )}
-                  />
-                </div>
-                <Button
-                  className={styles["btn-sendInfo"]}
-                  variant="contained"
-                  type="submit"
-                  disabled={assigningTask}
-                >
-                  {assigningTask ? <CircularProgress /> : "Asignar Tarea"}
-                </Button>
-              </form>
-            </Card>
-          </div>
-        )}
 
         <div className="py-5">
           <h5>Historial Tareas</h5>
@@ -605,8 +616,9 @@ function TicketReport(props: TicketReportProps) {
                     </small>
                   </Col>
                   {!tat?.Finished &&
+                    t.State != "RESUELTO" &&
                     (user?.userCategoryName == "Administrator" ||
-                      tat?.IdEmployeeNavigation.Name == user?.name) && (
+                      t.IdEmployee == user?.idUser) && (
                       <Col md={3}>
                         <IconButton
                           aria-label="finish"

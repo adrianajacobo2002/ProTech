@@ -38,12 +38,14 @@ export default function TicketsAsignados() {
   const handleHideModal = () => setModalShow(false);
 
   const withFilter = () => {
-    if (filter == undefined) return assignedTickets;
+    if (filter == undefined || assignedTickets == undefined)
+      return assignedTickets;
 
-    const { agenteId, from, state, to } = filter;
+    const { agenteId, from, state, to, category } = filter;
     return assignedTickets
       .filter((at) => (state ? at.State == state : true))
       .filter((at) => (agenteId ? at.IdEmployee == agenteId : true))
+      .filter((at) => (category ? at.Category?.includes(category) : true))
       .filter((at) => {
         const creationDate = new Date(at.CreationDate);
         const isAfter = from != null ? creationDate >= from : true;
@@ -104,7 +106,7 @@ export default function TicketsAsignados() {
                     <TableCell align="center">
                       {new Date(t.CreationDate).toLocaleDateString()}
                     </TableCell>
-                    <TableCell align="center">Base de datos</TableCell>
+                    <TableCell align="center">{t.Category || "-"}</TableCell>
                     <TableCell align="center">
                       <p className={style["word"]}>{t.State}</p>
                     </TableCell>

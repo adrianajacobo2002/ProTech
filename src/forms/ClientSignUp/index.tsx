@@ -10,6 +10,8 @@ import logo from "@/assets/images/logo.svg";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { API_URL } from "@/utils/consts";
 import { toast } from "react-toastify";
+import useUsers from "@/hooks/useUsers";
+import { CircularProgress } from "@mui/material";
 
 interface ClientSignUpProps {
   show: boolean;
@@ -27,7 +29,12 @@ type TFormFields = {
 };
 
 function ClientSignUp(props: ClientSignUpProps) {
-  const { control, handleSubmit } = useForm<TFormFields>({
+  const { refetchUsers } = useUsers();
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<TFormFields>({
     defaultValues: {
       name: "",
       email: "",
@@ -49,6 +56,8 @@ function ClientSignUp(props: ClientSignUpProps) {
         body: JSON.stringify(data),
       });
 
+      props.onHide();
+      refetchUsers();
       toast("Cliente creado con éxito", {
         type: "success",
       });
@@ -117,7 +126,7 @@ function ClientSignUp(props: ClientSignUpProps) {
                 <Controller
                   name="cellphone"
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: { onChange, ...field } }) => (
                     <TextField
                       {...field}
                       fullWidth
@@ -126,6 +135,12 @@ function ClientSignUp(props: ClientSignUpProps) {
                       label="Número Telefónico"
                       variant="outlined"
                       size="small"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (isNaN(+val) || val.length > 8) return;
+
+                        onChange(val);
+                      }}
                     />
                   )}
                 />
@@ -182,8 +197,9 @@ function ClientSignUp(props: ClientSignUpProps) {
             className={style["btn-sendInfo"]}
             variant="contained"
             type="submit"
+            disabled={isSubmitting}
           >
-            Registrar Cliente
+            {isSubmitting ? <CircularProgress /> : "Registrar Cliente"}
           </Button>
         </form>
       </Modal.Body>
