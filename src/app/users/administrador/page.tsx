@@ -23,11 +23,16 @@ import IconButton from "@mui/material/IconButton";
 import TasksResumeModal from "@/components/task-resume";
 import useStats from "@/hooks/useStats";
 import useUser from "@/hooks/useUser";
+import useTasks from "@/hooks/useTasks";
+import { TTicketAdditionalTask } from "@/utils/types";
 
 export default function Dashboard() {
   const [modalShow, setModalShow] = useState(false);
   const { user } = useUser();
   const { stats, statsLoading } = useStats(user?.idUser ?? 0);
+  const { tasks } = useTasks(user?.idUser ?? 0);
+  const [selectedTask, setSelectedTask] = useState<TTicketAdditionalTask>();
+  const unfinishedTasks = tasks?.filter((t) => !t?.Finished);
 
   const handleShowModal = () => setModalShow(true);
   const handleHideModal = () => setModalShow(false);
@@ -45,7 +50,7 @@ export default function Dashboard() {
             <br />
             <Card body>
               <small className="py-2">
-                Te han sido asignadas <b>4</b> tareas
+                Tienes <b>{unfinishedTasks?.length}</b> tareas asignadas
               </small>
               <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 200 }} aria-label="simple table">
@@ -61,20 +66,21 @@ export default function Dashboard() {
                   </TableHead>
 
                   <TableBody>
-                    <TableRow>
-                      <TableCell component="th" scope="row" align="center">
-                        12345678
-                      </TableCell>
-                      <TableCell align="center">
-                        <IconButton aria-label="ver" onClick={handleShowModal}>
-                          <AddCircleOutlineRoundedIcon />
-                        </IconButton>
-                        <TasksResumeModal
-                          show={modalShow}
-                          onHide={handleHideModal}
-                        />
-                      </TableCell>
-                    </TableRow>
+                    {unfinishedTasks?.map((t) => (
+                      <TableRow>
+                        <TableCell component="th" scope="row" align="center">
+                          {t?.IdTicketAdditionalTask}
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            aria-label="ver"
+                            onClick={() => setSelectedTask(t)}
+                          >
+                            <AddCircleOutlineRoundedIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -223,6 +229,13 @@ export default function Dashboard() {
           </Col>
         </Row>
       </div>
+      {selectedTask && (
+        <TasksResumeModal
+          show={true}
+          onHide={() => setSelectedTask(undefined)}
+          task={selectedTask}
+        />
+      )}
     </div>
   );
 }

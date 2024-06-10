@@ -13,6 +13,7 @@ export default function useAssignedTickets(employeeId: number) {
     queryFn: () => fetchAssignedTickets(employeeId),
     staleTime: Infinity,
     placeholderData: keepPreviousData,
+    refetchOnMount: true,
   });
 
   return {

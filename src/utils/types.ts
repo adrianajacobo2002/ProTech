@@ -95,6 +95,7 @@ export type TTicketUser = {
 
 export type TTicketAdditionalTask = {
   IdTicketAdditionalTask: number;
+  IdTicket: number;
   Description: string;
   Finished: boolean;
   IdEmployeeNavigation: {

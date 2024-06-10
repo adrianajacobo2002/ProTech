@@ -1,18 +1,39 @@
 "use client";
-import * as React from "react";
+
 import Modal from "react-bootstrap/Modal";
 import Dropdown from "react-bootstrap/Dropdown";
 import { Col, Row } from "react-bootstrap";
-import Form from "react-bootstrap/Form";
-import Button from "@mui/material/Button";
-import style from "./styles.module.scss";
+import { TTicketAdditionalTask } from "@/utils/types";
+import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
+import { IconButton } from "@mui/material";
+import { useState } from "react";
+import { finishTask } from "@/services/tasks.service";
+import useTasks from "@/hooks/useTasks";
+import useUser from "@/hooks/useUser";
+import { toast } from "react-toastify";
 
 interface TaskResumeProps {
   show: boolean;
   onHide: () => void;
+  task: TTicketAdditionalTask;
 }
 
 function TaskResume(props: TaskResumeProps) {
+  const [finishingTask, setFinishingTask] = useState(false);
+  const { user } = useUser();
+  const { reloadTasks } = useTasks(user?.idUser ?? 0);
+
+  const handleCompleteTask = async () => {
+    setFinishingTask(true);
+    await finishTask(props.task!.IdTicketAdditionalTask);
+    setFinishingTask(false);
+    toast("Tarea terminada con éxito", {
+      type: "success",
+    });
+    props.onHide();
+    reloadTasks();
+  };
+
   return (
     <Modal
       {...props}
@@ -22,7 +43,7 @@ function TaskResume(props: TaskResumeProps) {
     >
       <Modal.Body className="p-5">
         <h5>
-          <b>Ticket #123214</b>
+          <b>Ticket #{props.task?.IdTicket}</b>
         </h5>
         <p>-Inserte descripción del ticket bla bla bla-</p>
 
@@ -35,26 +56,16 @@ function TaskResume(props: TaskResumeProps) {
               <b>Encargado</b>
             </Col>
             <Col md={4}>
-              <b>Estado</b>
+              <b>Completar tarea</b>
             </Col>
           </Row>
           <Row>
-            <Col md={4}>Tarea 1</Col>
-            <Col md={4}>José P</Col>
+            <Col md={4}>Tarea {props.task?.IdTicketAdditionalTask}</Col>
+            <Col md={4}>{props.task?.IdEmployeeNavigation.Name}</Col>
             <Col md={4}>
-              <Dropdown>
-                <Dropdown.Toggle variant="success" id="dropdown-status">
-                  Status de la Tarea
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu>
-                  <Dropdown.Item href="#/action-1">En progreso</Dropdown.Item>
-                  <Dropdown.Item href="#/action-2">
-                    En espera de información del cliente
-                  </Dropdown.Item>
-                  <Dropdown.Item href="#/action-3">Resuelto</Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+              <IconButton onClick={handleCompleteTask} disabled={finishingTask}>
+                <CheckCircleOutlineRoundedIcon color="success" />
+              </IconButton>
             </Col>
           </Row>
         </div>
@@ -66,8 +77,11 @@ function TaskResume(props: TaskResumeProps) {
 interface TasksResumeModalProps {
   show: boolean;
   onHide: () => void;
+  task: TTicketAdditionalTask;
 }
 
 export default function TasksResumeModal(props: TasksResumeModalProps) {
-  return <TaskResume show={props.show} onHide={props.onHide} />;
+  return (
+    <TaskResume show={props.show} onHide={props.onHide} task={props.task} />
+  );
 }

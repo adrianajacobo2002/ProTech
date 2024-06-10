@@ -41,6 +41,7 @@ import IconButton from "@mui/material/IconButton";
 import { useEffect, useState } from "react";
 
 import styles from "./styles.module.scss";
+import { finishTask } from "@/services/tasks.service";
 
 interface TicketReportProps {
   ticket: TTicketValue;
@@ -185,6 +186,7 @@ function TicketReport(props: TicketReportProps) {
           IdTicketAdditionalTask: newTask!.IdTicketAdditionalTask,
           Description: description,
           Finished: false,
+          IdTicket: t.IdTicket,
           IdEmployeeNavigation: {
             Name: newTask!.IdEmployeeNavigation.Name,
           },
@@ -227,32 +229,26 @@ function TicketReport(props: TicketReportProps) {
   };
 
   const handleFinishTask = async (taskId: number) => {
-    try {
-      const fetchRes = await fetch(
-        `${API_URL}/Task/ChangeState?taskId=${taskId}&state=${true}`,
-        {
-          method: "PUT",
-        }
-      );
+    const finished = await finishTask(taskId);
 
-      if (!fetchRes.ok) throw new Error();
-
-      setAdditionalTasks((val) => {
-        const _ = JSON.parse(JSON.stringify(val)) as TTicketAdditionalTask[];
-        const i = _.findIndex((tat) => tat?.IdTicketAdditionalTask == taskId);
-        _[i]!.Finished = true;
-        return _;
-      });
-
-      await reloadAssignedTickets();
-      toast("Tarea finalizada con éxito", {
-        type: "success",
-      });
-    } catch (error: any) {
+    if (!finished) {
       toast("No se pudo finalizar la tarea", {
         type: "error",
       });
+      return;
     }
+
+    setAdditionalTasks((val) => {
+      const _ = JSON.parse(JSON.stringify(val)) as TTicketAdditionalTask[];
+      const i = _.findIndex((tat) => tat?.IdTicketAdditionalTask == taskId);
+      _[i]!.Finished = true;
+      return _;
+    });
+
+    await reloadAssignedTickets();
+    toast("Tarea finalizada con éxito", {
+      type: "success",
+    });
   };
 
   if (!t) return;
