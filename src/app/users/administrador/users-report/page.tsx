@@ -3,14 +3,13 @@ import * as React from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import Button from "@mui/material/Button";
 import UsersTable from "@/components/users-table";
 import style from "./style.module.scss";
 import ClientSignUpModal from "@/forms/ClientSignUp";
 import EmployeeSignUpModal from "@/forms/EmployeeSignUp";
-
-
+import useUsers from "@/hooks/useUsers";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -43,23 +42,20 @@ function a11yProps(index: number) {
 
 export default function UsersReport() {
   const [value, setValue] = React.useState(0);
+  const { users } = useUsers();
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleChange = (_: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
   const [modalShow, setModalShow] = React.useState(false);
   const [EmployeemodalShow, EmployeesetModalShow] = React.useState(false);
-  
 
   const handleShowModal = () => setModalShow(true);
   const handleHideModal = () => setModalShow(false);
 
   const handleEmployeeModalShow = () => EmployeesetModalShow(true);
   const handleEmployeeModalClose = () => EmployeesetModalShow(false);
-
-
-
 
   return (
     <>
@@ -80,7 +76,7 @@ export default function UsersReport() {
                   </Tabs>
                 </div>
 
-                <div >
+                <div>
                   <Button
                     variant="contained"
                     className={style["btn-createClient"]}
@@ -89,7 +85,10 @@ export default function UsersReport() {
                   >
                     Crear Cliente
                   </Button>
-                  <ClientSignUpModal show={modalShow} onHide={handleHideModal} />
+                  <ClientSignUpModal
+                    show={modalShow}
+                    onHide={handleHideModal}
+                  />
                   <Button
                     variant="contained"
                     className={style["btn-createEmployee"]}
@@ -98,16 +97,22 @@ export default function UsersReport() {
                   >
                     Crear Empleado
                   </Button>
-                  <EmployeeSignUpModal show={EmployeemodalShow} onHide={handleEmployeeModalClose} />
-
+                  <EmployeeSignUpModal
+                    show={EmployeemodalShow}
+                    onHide={handleEmployeeModalClose}
+                  />
                 </div>
               </div>
             </Box>
             <CustomTabPanel value={value} index={0}>
-              <UsersTable />
+              <UsersTable
+                users={users?.filter((u) => u.userCategoryName != "User") ?? []}
+              />
             </CustomTabPanel>
             <CustomTabPanel value={value} index={1}>
-              <UsersTable />
+              <UsersTable
+                users={users?.filter((u) => u.userCategoryName == "User") ?? []}
+              />
             </CustomTabPanel>
           </Box>
         </div>
@@ -115,4 +120,3 @@ export default function UsersReport() {
     </>
   );
 }
-

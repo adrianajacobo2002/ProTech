@@ -1,33 +1,50 @@
 "use client";
-import * as React from "react";
+
 import Modal from "react-bootstrap/Modal";
-import Dropdown from "react-bootstrap/Dropdown";
 import { Col, Row } from "react-bootstrap";
-import Form from "react-bootstrap/Form";
-import Button from "@mui/material/Button";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import style from "./styles.module.scss";
 import Image from "next/image";
 import logoLetra from "@/assets/images/logoLetras.svg";
 import TextField from "@mui/material/TextField";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { styled } from "@mui/material/styles";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
 import FolderIcon from "@mui/icons-material/Folder";
 import Card from "react-bootstrap/Card";
 import Autocomplete from "@mui/material/Autocomplete";
+import useUser from "@/hooks/useUser";
+import {
+  TTicketAdditionalTask,
+  TTicketStates,
+  TTicketValue,
+} from "@/utils/types";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
+import { API_URL } from "@/utils/consts";
+import { toast } from "react-toastify";
+import useSupports from "@/hooks/useSupports";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { asignTicket } from "@/services/tickets.service";
+import useTickets from "@/hooks/useTickets";
+import useAssignedTickets from "@/hooks/useAssignedTickets";
 import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded";
 import IconButton from "@mui/material/IconButton";
+import { useEffect, useState } from "react";
+
+import styles from "./styles.module.scss";
+import { finishTask } from "@/services/tasks.service";
 
 interface TicketReportProps {
+  ticket: TTicketValue;
   show: boolean;
   onHide: () => void;
 }
@@ -37,21 +54,204 @@ const Demo = styled("div")(({ theme }) => ({
 }));
 
 function TicketReport(props: TicketReportProps) {
-  {
-    /* Dropdown */
-  }
-  const [estado, setEstado] = React.useState("");
+  const { ticket: t } = props;
+  const [additionalTasks, setAdditionalTasks] = useState<
+    TTicketAdditionalTask[]
+  >([]);
+  const { user } = useUser();
+  const { supports } = useSupports();
+  const { refetchTickets } = useTickets(
+    user?.userCategoryName == "Administrator" ? undefined : user?.idUser
+  );
+  const { reloadAssignedTickets } = useAssignedTickets(user?.idUser ?? 0);
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setEstado(event.target.value as string);
+  useEffect(() => {
+    setAdditionalTasks(t?.TicketAdditionalTasks?.$values ?? []);
+  }, [t]);
+
+  //#region AssignTicketForm
+  const {
+    control: assignTicketControl,
+    handleSubmit: handleAssignTicketSubmit,
+    formState: { isSubmitting: assigningTicket },
+  } = useForm<TAssignTicketFormFields>({
+    defaultValues: {
+      employeeId: t?.IdEmployee ?? 0,
+    },
+  });
+
+  const handleAssignTicketFormSubmit: SubmitHandler<
+    TAssignTicketFormFields
+  > = async (data) => {
+    const { employeeId } = data;
+    if (employeeId == 0) {
+      toast("Selecciona un agente para asignar el ticket", {
+        type: "warning",
+      });
+      return;
+    }
+
+    const assigned = await asignTicket(t.IdTicket, employeeId);
+    if (!assigned) {
+      toast("Algo falló al asignar el ticket", {
+        type: "error",
+      });
+      return;
+    }
+
+    refetchTickets();
+    toast("Ticket asignado con éxito", {
+      type: "success",
+    });
+  };
+  //#endregion
+
+  //#region CommentForm
+  const {
+    control: commentFormControl,
+    handleSubmit: handleCommentSubmit,
+    formState: { isSubmitting: commenting },
+    reset: commentFormReset,
+  } = useForm<{ comment: string }>({
+    defaultValues: {
+      comment: "",
+    },
+  });
+
+  const handleCommentFormSubmit: SubmitHandler<{ comment: string }> = async ({
+    comment,
+  }) => {
+    await fetch(`${API_URL}/Comment/AddComment?ticketId=${t.IdTicket}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        comment,
+        idUser: user!.idUser,
+      }),
+    });
+
+    t.TicketComments.$values.push({
+      Comment: comment,
+      Date: new Date().toLocaleDateString(),
+      IdUserNavigation: null,
+    });
+
+    reloadAssignedTickets();
+    commentFormReset();
+    toast("Comentario agregado exitosamente", {
+      type: "success",
+    });
+  };
+  //#endregion
+
+  //#region TaskForm
+  const {
+    control: taskControl,
+    handleSubmit: handleTastkSubmit,
+    formState: { isSubmitting: assigningTask },
+  } = useForm<TTaskFormFields>({
+    defaultValues: {
+      description: "",
+      employeeId: 0,
+    },
+  });
+
+  const handleAssignTaskSubmit: SubmitHandler<TTaskFormFields> = async (
+    data
+  ) => {
+    try {
+      const { description, employeeId } = data;
+      const fetchRes = await fetch(
+        `${API_URL}/Task/CreateTask?employeeId=${employeeId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            idTicket: t.IdTicket,
+            description,
+          }),
+        }
+      );
+
+      if (!fetchRes.ok) throw new Error();
+
+      const newTask = (await fetchRes.json()) as TTicketAdditionalTask;
+      setAdditionalTasks((val) => [
+        ...val,
+        {
+          IdTicketAdditionalTask: newTask!.IdTicketAdditionalTask,
+          Description: description,
+          Finished: false,
+          IdTicket: t.IdTicket,
+          IdEmployeeNavigation: {
+            Name: newTask!.IdEmployeeNavigation.Name,
+          },
+        },
+      ]);
+
+      toast("Tarea asignada con éxito", {
+        type: "success",
+      });
+    } catch (error: any) {
+      toast("No se pudo asignar la tareas", {
+        type: "error",
+      });
+    }
+  };
+  //#endregion
+
+  const handleStateChange = async (newState: TTicketStates) => {
+    try {
+      const fetchRes = await fetch(
+        `${API_URL}/Ticket/ChangeState?ticketId=${t.IdTicket}&state=${newState}`,
+        {
+          method: "PUT",
+        }
+      );
+
+      if (!fetchRes.ok) throw new Error();
+
+      t.State = newState;
+      if (user?.userCategoryName == "Support") reloadAssignedTickets();
+      else refetchTickets();
+      toast("Estado cambiado exitosamente", {
+        type: "success",
+      });
+    } catch (error: any) {
+      toast("Error al cambiar el estado del ticket", {
+        type: "error",
+      });
+    }
   };
 
-  {
-    /* Listado de Archivo*/
-  }
-  const [dense, setDense] = React.useState(false);
-  const [secondary, setSecondary] = React.useState(false);
+  const handleFinishTask = async (taskId: number) => {
+    const finished = await finishTask(taskId);
 
+    if (!finished) {
+      toast("No se pudo finalizar la tarea", {
+        type: "error",
+      });
+      return;
+    }
+
+    setAdditionalTasks((val) => {
+      const _ = JSON.parse(JSON.stringify(val)) as TTicketAdditionalTask[];
+      const i = _.findIndex((tat) => tat?.IdTicketAdditionalTask == taskId);
+      _[i]!.Finished = true;
+      return _;
+    });
+
+    await reloadAssignedTickets();
+    toast("Tarea finalizada con éxito", {
+      type: "success",
+    });
+  };
+
+  if (!t) return;
   return (
     <Modal
       {...props}
@@ -71,25 +271,21 @@ function TicketReport(props: TicketReportProps) {
           <p>
             <b>Nombre de Aplicación o Servicio</b>
           </p>
-          <p>ByteSavvy</p>
+          <p>{t.Name}</p>
         </div>
 
         <div className="pb-3">
           <p>
             <b>Descripción</b>
           </p>
-          <p>
-            La semana pasada nos enteramos de que hubo una brecha de seguridad
-            en la aplicación y algunos de nuestros datos confidenciales fueron
-            comprometidos.
-          </p>
+          <p>{t.Description}</p>
         </div>
 
         <div className="pb-3">
           <p>
             <b>Prioridad</b>
           </p>
-          <p>Crítico</p>
+          <p>{t.Priority}</p>
         </div>
 
         <div className="pb-3">
@@ -100,17 +296,11 @@ function TicketReport(props: TicketReportProps) {
 
         <div className="pb-3">
           <Row>
-            <Col md={6}>
+            <Col>
               <p>
                 <b>Nombres</b>
               </p>
-              <p>José</p>
-            </Col>
-            <Col md={6}>
-              <p>
-                <b>Apellidos</b>
-              </p>
-              <p>Perez</p>
+              <p>{t.IdUserNavigation?.Name}</p>
             </Col>
           </Row>
         </div>
@@ -121,13 +311,13 @@ function TicketReport(props: TicketReportProps) {
               <p>
                 <b>Correo Electrónico</b>
               </p>
-              <p>joseperez@gmail.com</p>
+              <p>{t.IdUserNavigation?.Email}</p>
             </Col>
             <Col md={6}>
               <p>
                 <b>Número Teléfonico</b>
               </p>
-              <p>0000-0000</p>
+              <p>{t.IdUserNavigation?.Cellphone}</p>
             </Col>
           </Row>
         </div>
@@ -138,13 +328,15 @@ function TicketReport(props: TicketReportProps) {
               <b>Archivos de Respaldo</b>
             </p>
             <Demo>
-              <List dense={dense}>
-                <ListItem>
-                  <ListItemIcon>
-                    <FolderIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Pruebas.pdf" />
-                </ListItem>
+              <List dense={false}>
+                {t.BackupFiles.$values.map((bf, i) => (
+                  <ListItem key={i}>
+                    <ListItemIcon>
+                      <FolderIcon />
+                    </ListItemIcon>
+                    <ListItemText primary={bf.Name} />
+                  </ListItem>
+                ))}
                 <hr />
               </List>
             </Demo>
@@ -153,159 +345,283 @@ function TicketReport(props: TicketReportProps) {
 
         {/* Se agregó botón para asignar el ticket  */}
         <div className="pb-5">
-          <h5>Asignar Ticket</h5>
-          <Card body className="text-center">
-            <div className="py-2">
-              <Autocomplete
-                disablePortal
-                id="combo-box-demo"
-                options={people}
-                renderInput={(params) => (
-                  <TextField {...params} label="Agente" />
-                )}
-              />
-            </div>
-            <div>
-              <Button className={style["btn-sendInfo"]} variant="contained">
-                Asignar Ticket
-              </Button>
-            </div>
-          </Card>
-        </div>
-
-        <div className="pb-3">
-          <h5>Actualizar Ticket</h5>
-          <Card body className="px-3">
-            <Row>
-              <Col md={6}>
-                <p>
-                  <b>Número de Ticket</b>
-                </p>
-                <p>T-12345678</p>
-              </Col>
-              <Col md={6}>
-                <div>
-                  <div className="pb-3">
-                    <FormControl fullWidth>
-                      <InputLabel id="demo-simple-select-label">
-                        Estado
-                      </InputLabel>
-                      <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        value={estado}
-                        label="Estado"
-                        onChange={handleChange}
-                      >
-                        <MenuItem value={1}>En Progreso</MenuItem>
-                        <MenuItem value={2}>
-                          En espera de información del cliente
-                        </MenuItem>
-                        <MenuItem value={3}>Resuelto</MenuItem>
-                      </Select>
-                    </FormControl>
+          {user?.userCategoryName == "Administrator" ? (
+            <>
+              <h5>Asignar Ticket</h5>
+              <Card body className="text-center">
+                <form
+                  onSubmit={handleAssignTicketSubmit(
+                    handleAssignTicketFormSubmit
+                  )}
+                >
+                  <div className="py-2">
+                    <Controller
+                      control={assignTicketControl}
+                      name="employeeId"
+                      render={({ field: { onChange, ...field } }) => (
+                        <Autocomplete
+                          disablePortal
+                          id="combo-box-demo"
+                          options={supports.map((s) => ({
+                            label: s.name,
+                            value: s.idUser,
+                          }))}
+                          defaultValue={
+                            t.IdEmployee
+                              ? {
+                                  label: t.IdEmployeeNavigation?.Name || "",
+                                  value: t.IdEmployee,
+                                }
+                              : undefined
+                          }
+                          onChange={(_, value) => onChange(value?.value ?? 0)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              {...field}
+                              required
+                              label="Agente"
+                            />
+                          )}
+                        />
+                      )}
+                    />
                   </div>
-                </div>
-              </Col>
-            </Row>
-            <div>
-              <TextField
-                fullWidth
-                id="outlined-multiline-flexible"
-                label="Comentario"
-                multiline
-                rows={2}
-              />
-            </div>
-            <div className="pt-4">
-              <Button
-                fullWidth
-                className={style["btn-sendInfo"]}
-                variant="contained"
+                  <div>
+                    <Button
+                      className={styles["btn-sendInfo"]}
+                      variant="contained"
+                      type="submit"
+                      disabled={assigningTicket}
+                    >
+                      {assigningTicket ? (
+                        <CircularProgress />
+                      ) : (
+                        "Asignar Ticket"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            </>
+          ) : (
+            <>
+              <h5>Agente asignado</h5>
+              <p>{t.IdEmployeeNavigation?.Name ?? "Sin asingar"}</p>
+            </>
+          )}
+        </div>
+        {/* Se agregó botón para asignar el ticket  */}
+        <div className="pb-3">
+          <h5>Estado del ticket</h5>
+          {user?.userCategoryName == "User" || t.State == "RESUELTO" ? (
+            <p>{t.State}</p>
+          ) : (
+            <FormControl fullWidth sx={{ mt: 3 }}>
+              <InputLabel id="ticket-state-id">Estado del ticket</InputLabel>
+              <Select
+                labelId="ticket-state-id"
+                label="Estado del ticket"
+                defaultValue={t.State}
+                onChange={(e) =>
+                  handleStateChange(e.target.value as TTicketStates)
+                }
               >
-                Actualizar
-              </Button>
-            </div>
-          </Card>
+                {t.State == "EN ESPERA" && (
+                  <MenuItem value="EN ESPERA">EN ESPERA</MenuItem>
+                )}
+                <MenuItem value="EN PROGRESO">EN PROGRESO</MenuItem>
+                <MenuItem value="RESUELTO">RESUELTO</MenuItem>
+              </Select>
+            </FormControl>
+          )}
         </div>
 
         <div className="py-4">
           <h5>Historial</h5>
-          <Card body className="text-center">
-            <Row>
-              <Col md={4}>
-                <p>T-12345678</p>
-                <small className={style["word"]}>En Progreso</small>
-              </Col>
-              <Col md={8}>
-                <TextField
-                  fullWidth
-                  disabled
-                  id="outlined-multiline-flexible"
-                  label="Comentario"
-                  multiline
-                  rows={2}
-                />
-              </Col>
-            </Row>
-          </Card>
+          {t.TicketComments.$values.map((c, i) => (
+            <div key={i}>
+              <p>{c.Comment}</p>
+              <Box>
+                <h6 style={{ fontSize: 12 }}>
+                  {new Date(c.Date).toLocaleDateString()} -{" "}
+                  {c.IdUserNavigation?.Name}
+                </h6>
+              </Box>
+              <hr />
+            </div>
+          ))}
+          {t.IdEmployee == user?.idUser && (
+            <Card body className="text-center">
+              <form onSubmit={handleCommentSubmit(handleCommentFormSubmit)}>
+                <Row>
+                  <Col>
+                    <Controller
+                      control={commentFormControl}
+                      name="comment"
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          fullWidth
+                          required
+                          id="outlined-multiline-flexible"
+                          label="Comentario"
+                          multiline
+                          rows={2}
+                        />
+                      )}
+                    />
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Button
+                      variant="contained"
+                      type="submit"
+                      className={styles["btn-sendInfo"]}
+                      sx={{ mt: 3 }}
+                    >
+                      {commenting ? <CircularProgress /> : "Agregar comentario"}
+                    </Button>
+                  </Col>
+                </Row>
+              </form>
+            </Card>
+          )}
         </div>
 
-        <div>
-          <h5>Tareas</h5>
-          <Card body className="text-center">
-            <div className="py-2">
-              <TextField
-                fullWidth
-                id="outlined-multiline-flexible"
-                label="Descripción de la tarea"
-                multiline
-                rows={2}
-              />
-            </div>
-            <div className="py-2">
-              <Autocomplete
-                disablePortal
-                id="combo-box-demo"
-                options={people}
-                renderInput={(params) => (
-                  <TextField {...params} label="Agente" />
-                )}
-              />
-            </div>
-            <div>
-              <Button className={style["btn-sendInfo"]} variant="contained">
-                Asignar Tarea
-              </Button>
-            </div>
-          </Card>
-        </div>
+        {(user?.userCategoryName == "Administrator" ||
+          user?.idUser == t.IdEmployee) && (
+          <div>
+            <h5>Tareas</h5>
+            <Card body className="text-center">
+              <form onSubmit={handleTastkSubmit(handleAssignTaskSubmit)}>
+                <div className="py-2">
+                  <Controller
+                    control={taskControl}
+                    name="description"
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        required
+                        id="outlined-multiline-flexible"
+                        label="Descripción de la tarea"
+                        multiline
+                        rows={2}
+                      />
+                    )}
+                  />
+                </div>
+                <div className="py-2">
+                  <Controller
+                    control={taskControl}
+                    name="employeeId"
+                    render={({ field: { onChange, ...field } }) => (
+                      <Autocomplete
+                        disablePortal
+                        id="combo-box-demo"
+                        options={supports
+                          .filter((s) => s.idUser != user?.idUser)
+                          .map((s) => ({
+                            label: s.name,
+                            value: s.idUser,
+                          }))}
+                        onChange={(_, value) => onChange(value?.value ?? 0)}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            {...field}
+                            required
+                            label="Agente"
+                          />
+                        )}
+                      />
+                    )}
+                  />
+                </div>
+                <Button
+                  className={styles["btn-sendInfo"]}
+                  variant="contained"
+                  type="submit"
+                  disabled={assigningTask}
+                >
+                  {assigningTask ? <CircularProgress /> : "Asignar Tarea"}
+                </Button>
+              </form>
+            </Card>
+          </div>
+        )}
 
         <div className="py-5">
           <h5>Historial Tareas</h5>
           <Card body>
-            <div className="py-2 text-center">
-              <Row>
-                <Col md={3}>
-                  <small>
-                    <s>Reiniciar el modem</s>
-                  </small>
-                </Col>
-                <Col md={3}>
-                  <small>
-                    <s>Jose P.</s>
-                  </small>
-                </Col>
-                <Col md={3}>
-                  <small className={style["word"]}>Abierto</small>
-                </Col>
-                <Col md={3}>
-                  <IconButton aria-label="finish" color="error">
-                    <EventAvailableRoundedIcon />
-                  </IconButton>
-                </Col>
-              </Row>
-            </div>
+            {additionalTasks.map((tat) => (
+              <div className="py-2 text-center">
+                <Row>
+                  <Col
+                    md={3}
+                    style={{
+                      fontSize: 10,
+                      textDecoration: tat?.Finished
+                        ? "line-through"
+                        : undefined,
+                    }}
+                  >
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="100%"
+                      fontSize={10}
+                      sx={{
+                        textDecoration: tat?.Finished
+                          ? "line-through"
+                          : undefined,
+                      }}
+                    >
+                      {tat?.Description}
+                    </Box>
+                  </Col>
+                  <Col md={3}>
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="100%"
+                      fontSize={10}
+                      sx={{
+                        textDecoration: tat?.Finished
+                          ? "line-through"
+                          : undefined,
+                      }}
+                    >
+                      {tat?.IdEmployeeNavigation.Name}
+                    </Box>
+                  </Col>
+                  <Col md={3}>
+                    <small className={styles["word"]}>
+                      {tat?.Finished ? "Finalizado" : "Abierto"}
+                    </small>
+                  </Col>
+                  {!tat?.Finished &&
+                    (user?.userCategoryName == "Administrator" ||
+                      tat?.IdEmployeeNavigation.Name == user?.name) && (
+                      <Col md={3}>
+                        <IconButton
+                          aria-label="finish"
+                          color="error"
+                          onClick={() =>
+                            handleFinishTask(tat!.IdTicketAdditionalTask)
+                          }
+                        >
+                          <EventAvailableRoundedIcon />
+                        </IconButton>
+                      </Col>
+                    )}
+                </Row>
+              </div>
+            ))}
           </Card>
         </div>
       </Modal.Body>
@@ -314,22 +630,26 @@ function TicketReport(props: TicketReportProps) {
 }
 
 interface TicketReportModalProps {
+  ticket: TTicketValue;
   show: boolean;
   onHide: () => void;
 }
 
 export default function CreateTicketModal(props: TicketReportModalProps) {
-  return <TicketReport show={props.show} onHide={props.onHide} />;
+  return (
+    <TicketReport
+      show={props.show}
+      onHide={props.onHide}
+      ticket={props.ticket}
+    />
+  );
 }
 
-const people = [
-  { label: "John Doe" },
-  { label: "Jane Smith" },
-  { label: "Alice Johnson" },
-  { label: "Bob Brown" },
-  { label: "Carol White" },
-  { label: "David Black" },
-  { label: "Eva Green" },
-  { label: "Frank Clark" },
-  { label: "Grace Lewis" },
-];
+type TAssignTicketFormFields = {
+  employeeId: number;
+};
+
+type TTaskFormFields = {
+  description: string;
+  employeeId: number;
+};

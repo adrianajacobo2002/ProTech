@@ -10,46 +10,36 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
 import FilterAltRoundedIcon from "@mui/icons-material/FilterAltRounded";
-import Button from "@mui/material/Button";
 import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
 import style from "./style.module.scss";
 import TicketsFilter from "@/components/tickets-filter";
 import CreateTicketModal from "@/components/ticket-report";
-import { TFilter, TTicketValue } from "@/utils/types";
+import useUser from "@/hooks/useUser";
 import useTickets from "@/hooks/useTickets";
+import { TTicketValue } from "@/utils/types";
 
 export default function TicketsResume() {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
+  const { user } = useUser();
+  const { tickets, ticketsLoading } = useTickets(user!.idUser);
   const [selectedTicket, setSelectedTicket] = useState<
     TTicketValue | undefined
   >();
-  const { tickets } = useTickets();
-  const [filter, setFilter] = useState<TFilter>();
 
   const handleShowOffcanvas = () => setShowOffcanvas(true);
   const handleCloseOffcanvas = () => setShowOffcanvas(false);
 
-  const withFilter = () => {
-    if (filter == undefined || tickets == undefined) return tickets;
+  const [modalShow, setModalShow] = React.useState(false);
 
-    const { agenteId, from, state, to, category } = filter;
-    return tickets
-      .filter((at) => (state ? at.State == state : true))
-      .filter((at) => (agenteId ? at.IdEmployee == agenteId : true))
-      .filter((at) => (category ? at.Category?.includes(category) : true))
-      .filter((at) => {
-        const creationDate = new Date(at.CreationDate);
-        const isAfter = from != null ? creationDate >= from : true;
-        const isBefore = to != null ? creationDate <= to : true;
-        return isAfter && isBefore;
-      });
-  };
+  const handleShowModal = () => setModalShow(true);
+  const handleHideModal = () => setModalShow(false);
 
+  if (ticketsLoading && !tickets) return;
   return (
     <>
       <div>
         <div className="d-flex justify-content-between">
-          <h1>Tickets</h1>
+          <h1>Mis tickets</h1>
           <IconButton
             aria-label="delete"
             size="large"
@@ -63,7 +53,6 @@ export default function TicketsResume() {
             show={showOffcanvas}
             handleClose={handleCloseOffcanvas}
             placement="end"
-            onFilter={setFilter}
           />
         </div>
         <hr />
@@ -78,7 +67,6 @@ export default function TicketsResume() {
               <TableHead>
                 <TableRow>
                   <TableCell align="center">ID Ticket</TableCell>
-                  <TableCell align="center">Nombre</TableCell>
                   <TableCell align="center">Solicitante</TableCell>
                   <TableCell align="center">Fecha</TableCell>
                   <TableCell align="center">Agente</TableCell>
@@ -88,27 +76,20 @@ export default function TicketsResume() {
                 </TableRow>
               </TableHead>
 
-              <TableBody>
-                {withFilter()?.map((t) => (
+              {tickets?.map((t, i) => (
+                <TableBody key={i}>
                   <TableRow>
                     <TableCell component="th" scope="row" align="center">
                       {t.IdTicket}
                     </TableCell>
-                    <TableCell component="th" scope="row" align="center">
-                      {t.Name}
-                    </TableCell>
-                    <TableCell align="center">
-                      {t.IdUserNavigation?.Name}
-                    </TableCell>
+                    <TableCell align="center">{t.Name}</TableCell>
                     <TableCell align="center">
                       {new Date(t.CreationDate).toLocaleDateString()}
                     </TableCell>
                     <TableCell align="center">
                       {t.IdEmployeeNavigation?.Name ?? "No asignado"}
                     </TableCell>
-                    <TableCell align="center">
-                      {t.Category ?? "Sin área"}
-                    </TableCell>
+                    <TableCell align="center">{t.Category}</TableCell>
                     <TableCell align="center">
                       <p className={style["word"]}>{t.State}</p>
                     </TableCell>
@@ -119,22 +100,27 @@ export default function TicketsResume() {
                       <IconButton
                         aria-label="View Detail"
                         size="large"
-                        onClick={() => setSelectedTicket(t)}
+                        onClick={() => {
+                          setSelectedTicket(t);
+                          handleShowModal();
+                        }}
                       >
                         <KeyboardArrowRightRoundedIcon fontSize="inherit" />
                       </IconButton>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
+                </TableBody>
+              ))}
             </Table>
           </TableContainer>
         </Paper>
-        <CreateTicketModal
-          show={selectedTicket != undefined}
-          onHide={() => setSelectedTicket(undefined)}
-          ticket={selectedTicket!}
-        />
+        {selectedTicket && (
+          <CreateTicketModal
+            show={modalShow}
+            onHide={handleHideModal}
+            ticket={selectedTicket}
+          />
+        )}
       </div>
     </>
   );

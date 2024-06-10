@@ -1,5 +1,5 @@
 "use client";
-import * as React from "react";
+
 import Modal from "react-bootstrap/Modal";
 import { Col, Row } from "react-bootstrap";
 import Button from "@mui/material/Button";
@@ -7,22 +7,58 @@ import style from "./styles.module.scss";
 import TextField from "@mui/material/TextField";
 import Image from "next/image";
 import logo from "@/assets/images/logo.svg";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { API_URL } from "@/utils/consts";
+import { toast } from "react-toastify";
 
 interface EmployeeSignUpProps {
   show: boolean;
   onHide: () => void;
 }
 
-function EmployeeSignUp(props: EmployeeSignUpProps) {
-  const [role, setRole] = React.useState("");
+type TFormFields = {
+  name: string;
+  email: string;
+  cellphone: string;
+  password: string;
+  companyName: string;
+  jobPosition: string;
+  idUserCategory: number;
+};
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setRole(event.target.value as string);
+function EmployeeSignUp(props: EmployeeSignUpProps) {
+  const { control, handleSubmit } = useForm<TFormFields>({
+    defaultValues: {
+      name: "",
+      email: "",
+      cellphone: "",
+      password: "",
+      companyName: "ProTech",
+      jobPosition: "Support",
+      idUserCategory: 3,
+    },
+  });
+
+  const handleFormSubmit: SubmitHandler<TFormFields> = async (data) => {
+    try {
+      await fetch(`${API_URL}/User/CreateSupport`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      toast("Soporte creado con éxito", {
+        type: "success",
+      });
+    } catch (error: any) {
+      toast("Error al crear el soporte", {
+        type: "error",
+      });
+    }
   };
+
   return (
     <Modal
       {...props}
@@ -34,27 +70,43 @@ function EmployeeSignUp(props: EmployeeSignUpProps) {
       <Modal.Body className="p-5 text-center">
         <Image src={logo} width={200} height={100} alt="prueba de imagen" />
         <h4 className="py-2 text-center">Registrar Empleado</h4>
-        <div>
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
           <div>
             <Row className="py-3">
-              <Col md={6}>
-                <TextField
-                  fullWidth
-                  id="outlined-basic"
-                  type="name"
-                  label="Nombre"
-                  variant="outlined"
-                  size="small"
+              <Col>
+                <Controller
+                  control={control}
+                  name="name"
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      required
+                      id="outlined-basic"
+                      type="name"
+                      label="Nombre"
+                      variant="outlined"
+                      size="small"
+                    />
+                  )}
                 />
               </Col>
-              <Col md={6}>
-                <TextField
-                  fullWidth
-                  id="outlined-basic"
-                  type="name"
-                  label="Apellidos"
-                  variant="outlined"
-                  size="small"
+              <Col>
+                <Controller
+                  control={control}
+                  name="email"
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      required
+                      id="outlined-basic"
+                      type="email"
+                      label="Correo Electrónico"
+                      variant="outlined"
+                      size="small"
+                    />
+                  )}
                 />
               </Col>
             </Row>
@@ -62,13 +114,20 @@ function EmployeeSignUp(props: EmployeeSignUpProps) {
           <div>
             <Row className="py-3">
               <Col>
-                <TextField
-                  fullWidth
-                  id="outlined-basic"
-                  type="email"
-                  label="Correo Electrónico"
-                  variant="outlined"
-                  size="small"
+                <Controller
+                  control={control}
+                  name="cellphone"
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      required
+                      id="outlined-basic"
+                      label="Número Telefónico"
+                      variant="outlined"
+                      size="small"
+                    />
+                  )}
                 />
               </Col>
             </Row>
@@ -76,58 +135,21 @@ function EmployeeSignUp(props: EmployeeSignUpProps) {
           <div>
             <Row className="py-3">
               <Col>
-                <TextField
-                  fullWidth
-                  id="outlined-basic"
-                  label="Número Telefónico"
-                  variant="outlined"
-                  size="small"
-                />
-              </Col>
-            </Row>
-          </div>
-          <div>
-            <Row className="py-3">
-              <Col md={6}>
-                <TextField
-                  fullWidth
-                  id="outlined-basic"
-                  type="text"
-                  label="Cargo en la Empresa"
-                  variant="outlined"
-                  size="small"
-                />
-              </Col>
-              <Col md={6}>
-                <FormControl fullWidth>
-                  <InputLabel id="demo-simple-select-label">
-                    Prioridad
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={role}
-                    label="Rol"
-                    size="small"
-                    onChange={handleChange}
-                  >
-                    <MenuItem value={1}>Administrador</MenuItem>
-                    <MenuItem value={2}>Soporte Técnico</MenuItem>
-                  </Select>
-                </FormControl>
-              </Col>
-            </Row>
-          </div>
-          <div>
-            <Row className="py-3">
-              <Col>
-                <TextField
-                  fullWidth
-                  id="outlined-basic"
-                  type="password"
-                  label="Contraseña"
-                  variant="outlined"
-                  size="small"
+                <Controller
+                  control={control}
+                  name="password"
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      required
+                      id="outlined-basic"
+                      type="password"
+                      label="Contraseña"
+                      variant="outlined"
+                      size="small"
+                    />
+                  )}
                 />
               </Col>
             </Row>
@@ -137,10 +159,11 @@ function EmployeeSignUp(props: EmployeeSignUpProps) {
             fullWidth
             className={style["btn-sendInfo"]}
             variant="contained"
+            type="submit"
           >
             Registrar Empleado
           </Button>
-        </div>
+        </form>
       </Modal.Body>
     </Modal>
   );
