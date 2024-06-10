@@ -136,6 +136,12 @@ export default function AdminNavbar() {
       onClick: () => router.push("/users/tickets"),
     },
     {
+      text: "Tareas",
+      icon: <FormatListBulletedRoundedIcon />,
+      show: user?.userCategoryName != "User",
+      onClick: () => router.push("/users/tareas"),
+    },
+    {
       text: "Usuarios",
       icon: <PeopleAltRoundedIcon />,
       show: user?.userCategoryName == "Administrator",

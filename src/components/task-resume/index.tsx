@@ -45,7 +45,7 @@ function TaskResume(props: TaskResumeProps) {
         <h5>
           <b>Ticket #{props.task?.IdTicket}</b>
         </h5>
-        <p>-Inserte descripción del ticket bla bla bla-</p>
+        <p>- {props.task?.Description} -</p>
 
         <div>
           <Row className="py-2">
@@ -63,9 +63,14 @@ function TaskResume(props: TaskResumeProps) {
             <Col md={4}>Tarea {props.task?.IdTicketAdditionalTask}</Col>
             <Col md={4}>{props.task?.IdEmployeeNavigation.Name}</Col>
             <Col md={4}>
-              <IconButton onClick={handleCompleteTask} disabled={finishingTask}>
-                <CheckCircleOutlineRoundedIcon color="success" />
-              </IconButton>
+              {!props.task?.Finished && (
+                <IconButton
+                  onClick={handleCompleteTask}
+                  disabled={finishingTask}
+                >
+                  <CheckCircleOutlineRoundedIcon color="success" />
+                </IconButton>
+              )}
             </Col>
           </Row>
         </div>
